@@ -26,7 +26,9 @@
 
 <body>
 
-  <!-- HEADER -->
+  <!-- =========================
+       HEADER
+  ========================== -->
 
   <header class="site-header">
 
@@ -59,13 +61,21 @@
         aria-label="التنقل الرئيسي"
       >
 
-        <a href="#home">الرئيسية</a>
+        <a href="#home">
+          الرئيسية
+        </a>
 
-        <a href="#projects">المشاريع</a>
+        <a href="#projects">
+          المشاريع
+        </a>
 
-        <a href="#about">عنّي</a>
+        <a href="#about">
+          عنّي
+        </a>
 
-        <a href="#contact">تواصل</a>
+        <a href="#contact">
+          تواصل
+        </a>
 
       </nav>
 
@@ -74,11 +84,16 @@
   </header>
 
 
-  <!-- MAIN -->
+  <!-- =========================
+       MAIN
+  ========================== -->
 
   <main>
 
-    <!-- HERO -->
+
+    <!-- =========================
+         HERO
+    ========================== -->
 
     <section
       id="home"
@@ -94,7 +109,9 @@
 
         <h1 id="hero-title">
           محمد أحمد
-          <span>مصمم جرافيك</span>
+          <span>
+            مصمم جرافيك
+          </span>
         </h1>
 
         <p class="hero-description">
@@ -126,7 +143,9 @@
     </section>
 
 
-    <!-- PROJECTS -->
+    <!-- =========================
+         PROJECTS
+    ========================== -->
 
     <section
       id="projects"
@@ -156,6 +175,7 @@
 
         </div>
 
+
         <div
           id="projects-grid"
           class="projects-grid"
@@ -179,7 +199,9 @@
     </section>
 
 
-    <!-- ABOUT -->
+    <!-- =========================
+         ABOUT
+    ========================== -->
 
     <section
       id="about"
@@ -265,7 +287,9 @@
     </section>
 
 
-    <!-- CONTACT -->
+    <!-- =========================
+         CONTACT
+    ========================== -->
 
     <section
       id="contact"
@@ -290,7 +314,11 @@
             تواصل معي ونبدأ نشتغل عليها.
           </p>
 
-          <div class="hero-actions">
+
+          <div class="hero-actions contact-actions">
+
+
+            <!-- WHATSAPP -->
 
             <a
               href="https://wa.me/249112854369"
@@ -301,14 +329,20 @@
               واتساب
             </a>
 
+
+            <!-- TELEGRAM -->
+
             <a
-  href="https://t.me/+201040931342"
-  class="button button-secondary"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  تيليجرام
+              href="https://t.me/+201040931342"
+              class="button button-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              تيليجرام
             </a>
+
+
+            <!-- EMAIL -->
 
             <a
               href="mailto:mohammedahmdb07@gmail.com"
@@ -328,14 +362,17 @@
   </main>
 
 
-  <!-- FOOTER -->
+  <!-- =========================
+       FOOTER
+  ========================== -->
 
   <footer class="site-footer">
 
     <div class="container footer-content">
 
       <p>
-        © <span id="current-year"></span>
+        ©
+        <span id="current-year"></span>
         B07 Portfolio
       </p>
 
@@ -348,26 +385,45 @@
   </footer>
 
 
-  <!-- JAVASCRIPT -->
+  <!-- =========================
+       JAVASCRIPT
+  ========================== -->
 
   <script>
 
     "use strict";
 
+
+    /* =========================
+       CURRENT YEAR
+    ========================== */
+
     const yearElement =
-      document.getElementById("current-year");
+      document.getElementById(
+        "current-year"
+      );
 
     if (yearElement) {
+
       yearElement.textContent =
         new Date().getFullYear();
+
     }
 
 
+    /* =========================
+       MOBILE MENU
+    ========================== */
+
     const menuToggle =
-      document.getElementById("menu-toggle");
+      document.getElementById(
+        "menu-toggle"
+      );
 
     const mainNavigation =
-      document.getElementById("main-navigation");
+      document.getElementById(
+        "main-navigation"
+      );
 
 
     if (
@@ -384,10 +440,12 @@
               "aria-expanded"
             ) === "true";
 
+
           menuToggle.setAttribute(
             "aria-expanded",
             String(!isOpen)
           );
+
 
           mainNavigation.classList.toggle(
             "is-open"
@@ -410,6 +468,7 @@
                 "false"
               );
 
+
               mainNavigation.classList.remove(
                 "is-open"
               );
@@ -423,6 +482,8 @@
 
   </script>
 
+
+  <!-- SUPABASE PROJECTS -->
 
   <script
     src="app.js"
