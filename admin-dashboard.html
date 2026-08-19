@@ -40,9 +40,28 @@
           <label for="project-url">رابط المشروع</label>
           <input id="project-url" type="url">
 
-          <label for="cover-image">رابط صورة الغلاف</label>
-          <input id="cover-image" type="url">
+          <label for="media-file">
+  صورة أو فيديو المشروع
+</label>
 
+<input
+  id="media-file"
+  type="file"
+  accept="image/*,video/*"
+>
+
+<small>
+  الحد الأقصى للملف 50 MB
+</small>
+
+<label for="cover-image">
+  رابط صورة الغلاف
+</label>
+
+<input
+  id="cover-image"
+  type="url"
+>
           <label for="sort-order">الترتيب</label>
           <input id="sort-order" type="number" value="0">
 
