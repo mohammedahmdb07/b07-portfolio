@@ -480,3 +480,29 @@ video {
     transition-duration: 0.01ms !important;
   }
   }
+.about-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.about-image img {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  display: block;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 768px) {
+
+  .about-image img {
+    width: 220px;
+    height: 220px;
+  }
+
+}
