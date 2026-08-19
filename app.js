@@ -1,9 +1,9 @@
 "use strict";
 
-/*
-  B07 Portfolio
-  Supabase public projects
-*/
+/* =========================================
+   B07 PORTFOLIO
+   Public Projects
+========================================= */
 
 const SUPABASE_URL =
   "https://vzmrdfyxzjbrgbcgydbb.supabase.co";
@@ -16,9 +16,9 @@ const projectsGrid =
   document.getElementById("projects-grid");
 
 
-/* =========================
-   Helpers
-========================= */
+/* =========================================
+   HELPERS
+========================================= */
 
 function escapeHtml(value) {
 
@@ -31,7 +31,7 @@ function escapeHtml(value) {
 }
 
 
-function showMessage(message) {
+function showMessage(text) {
 
   if (!projectsGrid) {
     return;
@@ -39,17 +39,177 @@ function showMessage(message) {
 
   projectsGrid.innerHTML = `
     <div class="loading-state">
-      <p>${escapeHtml(message)}</p>
+      <p>${escapeHtml(text)}</p>
     </div>
   `;
 }
 
 
-/* =========================
-   Supabase
-========================= */
+/* =========================================
+   MEDIA PARSER
+========================================= */
+
+function parseMediaUrls(value) {
+
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+
+  if (
+    typeof value === "string" &&
+    value.trim() !== ""
+  ) {
+
+    try {
+
+      const parsed =
+        JSON.parse(value);
+
+      return Array.isArray(parsed)
+        ? parsed
+        : [];
+
+    } catch (error) {
+
+      console.error(
+        "media_urls JSON error:",
+        error
+      );
+
+      return [];
+    }
+  }
+
+
+  return [];
+}
+
+
+/* =========================================
+   MEDIA RENDERER
+========================================= */
+
+function renderProjectMedia(project) {
+
+  const media =
+    parseMediaUrls(
+      project.media_urls
+    );
+
+
+  /* -------------------------
+     Uploaded media
+  ------------------------- */
+
+  if (media.length > 0) {
+
+    return media
+      .map(item => {
+
+        if (
+          !item ||
+          !item.url
+        ) {
+          return "";
+        }
+
+
+        const url =
+          escapeHtml(item.url);
+
+        const title =
+          escapeHtml(
+            project.title ||
+            "B07 Project"
+          );
+
+
+        const isVideo =
+          item.type === "video" ||
+          (
+            typeof item.mime_type ===
+            "string" &&
+            item.mime_type.startsWith(
+              "video/"
+            )
+          );
+
+
+        if (isVideo) {
+
+          return `
+            <video
+              class="project-video"
+              src="${url}"
+              controls
+              preload="metadata"
+              playsinline
+            ></video>
+          `;
+        }
+
+
+        return `
+          <img
+            class="project-image"
+            src="${url}"
+            alt="${title}"
+            loading="lazy"
+          >
+        `;
+
+      })
+      .join("");
+  }
+
+
+  /* -------------------------
+     Cover image fallback
+  ------------------------- */
+
+  if (project.cover_image) {
+
+    return `
+      <img
+        class="project-image"
+        src="${escapeHtml(
+          project.cover_image
+        )}"
+        alt="${escapeHtml(
+          project.title
+        )}"
+        loading="lazy"
+      >
+    `;
+  }
+
+
+  /* -------------------------
+     Placeholder
+  ------------------------- */
+
+  return `
+    <div
+      class="project-placeholder"
+      aria-label="B07"
+    >
+      B07
+    </div>
+  `;
+}
+
+
+/* =========================================
+   LOAD PROJECTS
+========================================= */
 
 async function fetchProjects() {
+
+  if (!projectsGrid) {
+    return;
+  }
+
 
   if (
     !SUPABASE_URL ||
@@ -64,12 +224,19 @@ async function fetchProjects() {
   }
 
 
+  projectsGrid.innerHTML = `
+    <div class="loading-state">
+      <p>جاري تحميل المشاريع...</p>
+    </div>
+  `;
+
+
   try {
 
     const response =
       await fetch(
         `${SUPABASE_URL}/rest/v1/projects` +
-        `?select=id,title,description,category,cover_image,project_url,media_urls,sort_order,created_at` +
+        `?select=id,title,description,category,cover_image,media_urls,project_url,sort_order,created_at` +
         `&is_published=eq.true` +
         `&order=sort_order.asc,created_at.desc`,
         {
@@ -91,8 +258,16 @@ async function fetchProjects() {
 
     if (!response.ok) {
 
+      const errorText =
+        await response.text();
+
+      console.error(
+        "Supabase error:",
+        errorText
+      );
+
       throw new Error(
-        `Supabase request failed: ${response.status}`
+        `HTTP ${response.status}`
       );
     }
 
@@ -101,7 +276,11 @@ async function fetchProjects() {
       await response.json();
 
 
-    renderProjects(projects);
+    renderProjects(
+      Array.isArray(projects)
+        ? projects
+        : []
+    );
 
   }
 
@@ -119,148 +298,11 @@ async function fetchProjects() {
 }
 
 
-/* =========================
-   Media
-========================= */
+/* =========================================
+   RENDER PROJECTS
+========================================= */
 
-function renderMedia(
-  project
-) {
-
-  let media = [];
-
-if (Array.isArray(project.media_urls)) {
-
-  media = project.media_urls;
-
-} else if (
-  typeof project.media_urls === "string" &&
-  project.media_urls.trim() !== ""
-) {
-
-  try {
-
-    media =
-      JSON.parse(
-        project.media_urls
-      );
-
-  } catch (error) {
-
-    console.error(
-      "Invalid media_urls:",
-      error
-    );
-
-    media = [];
-  }
-}
-
-
-  /*
-    الصور/الفيديوهات المرفوعة
-    من لوحة التحكم.
-  */
-
-  if (media.length > 0) {
-
-    return media
-      .map(item => {
-
-        if (
-          !item ||
-          !item.url
-        ) {
-          return "";
-        }
-
-
-        const url =
-          escapeHtml(item.url);
-
-
-        const title =
-          escapeHtml(
-            project.title
-          );
-
-
-        if (
-          item.type === "video" ||
-          (
-            item.mime_type &&
-            item.mime_type.startsWith(
-              "video/"
-            )
-          )
-        ) {
-
-          return `
-            <video
-              class="project-video"
-              src="${url}"
-              controls
-              preload="metadata"
-              playsinline
-            >
-            </video>
-          `;
-        }
-
-
-        return `
-          <img
-            class="project-image"
-            src="${url}"
-            alt="${title}"
-            loading="lazy"
-          >
-        `;
-
-      })
-      .join("");
-  }
-
-
-  /*
-    إذا لم توجد ملفات مرفوعة،
-    نستخدم cover_image القديمة.
-  */
-
-  if (
-    project.cover_image
-  ) {
-
-    return `
-      <img
-        class="project-image"
-        src="${escapeHtml(
-          project.cover_image
-        )}"
-        alt="${escapeHtml(
-          project.title
-        )}"
-        loading="lazy"
-      >
-    `;
-  }
-
-
-  return `
-    <div class="project-placeholder">
-      B07
-    </div>
-  `;
-}
-
-
-/* =========================
-   Render Projects
-========================= */
-
-function renderProjects(
-  projects
-) {
+function renderProjects(projects) {
 
   if (!projectsGrid) {
     return;
@@ -290,14 +332,8 @@ function renderProjects(
 
         const title =
           escapeHtml(
-            project.title
-          );
-
-
-        const description =
-          escapeHtml(
-            project.description ||
-            "مشروع من أعمال B07."
+            project.title ||
+            "بدون عنوان"
           );
 
 
@@ -308,8 +344,17 @@ function renderProjects(
           );
 
 
+        const description =
+          escapeHtml(
+            project.description ||
+            "مشروع من أعمال B07."
+          );
+
+
         const media =
-          renderMedia(project);
+          renderProjectMedia(
+            project
+          );
 
 
         const projectLink =
@@ -340,6 +385,7 @@ function renderProjects(
               ${media}
             </div>
 
+
             <div
               class="project-content"
             >
@@ -348,13 +394,16 @@ function renderProjects(
                 ${category}
               </p>
 
+
               <h3>
                 ${title}
               </h3>
 
+
               <p>
                 ${description}
               </p>
+
 
               ${projectLink}
 
@@ -368,209 +417,22 @@ function renderProjects(
 }
 
 
-/* =========================
-   Start
-========================= */
+/* =========================================
+   START
+========================================= */
 
-document.addEventListener(
-  "DOMContentLoaded",
-  fetchProjects
-);    .replaceAll("'", "&#039;");
-}
+if (
+  document.readyState ===
+  "loading"
+) {
 
+  document.addEventListener(
+    "DOMContentLoaded",
+    fetchProjects
+  );
 
-function showMessage(message) {
-  if (!projectsGrid) return;
+} else {
 
-  projectsGrid.innerHTML = `
-    <div class="loading-state">
-      <p>${escapeHtml(message)}</p>
-    </div>
-  `;
-}
+  fetchProjects();
 
-
-/* =========================
-   Supabase
-========================= */
-
-async function fetchProjects() {
-
-  if (
-    !SUPABASE_URL ||
-    !SUPABASE_ANON_KEY ||
-    SUPABASE_ANON_KEY.includes(
-      "PASTE_YOUR"
-    )
-  ) {
-    showMessage(
-      "لم يتم إعداد الاتصال بقاعدة البيانات بعد."
-    );
-
-    return;
-  }
-
-  try {
-
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/projects` +
-      `?select=id,title,description,category,cover_image,project_url,sort_order` +
-      `&is_published=eq.true` +
-      `&order=sort_order.asc,created_at.desc`,
-      {
-        method: "GET",
-
-        headers: {
-          "apikey": SUPABASE_ANON_KEY,
-          "Authorization":
-            `Bearer ${SUPABASE_ANON_KEY}`,
-          "Content-Type":
-            "application/json"
-        }
-      }
-    );
-
-
-    if (!response.ok) {
-      throw new Error(
-        `Supabase request failed: ${response.status}`
-      );
-    }
-
-
-    const projects =
-      await response.json();
-
-
-    renderProjects(projects);
-
-  } catch (error) {
-
-    console.error(
-      "Failed to load projects:",
-      error
-    );
-
-    showMessage(
-      "تعذر تحميل المشاريع حاليًا."
-    );
-  }
-}
-
-
-/* =========================
-   Render Projects
-========================= */
-
-function renderProjects(projects) {
-
-  if (!projectsGrid) return;
-
-
-  if (
-    !Array.isArray(projects) ||
-    projects.length === 0
-  ) {
-
-    projectsGrid.innerHTML = `
-      <div class="loading-state">
-        <p>لا توجد مشاريع منشورة حاليًا.</p>
-      </div>
-    `;
-
-    return;
-  }
-
-
-  projectsGrid.innerHTML =
-    projects
-      .map((project) => {
-
-        const title =
-          escapeHtml(project.title);
-
-        const description =
-          escapeHtml(
-            project.description ||
-            "مشروع من أعمال B07."
-          );
-
-        const category =
-          escapeHtml(
-            project.category ||
-            "Project"
-          );
-
-
-        const image =
-          project.cover_image
-            ? `
-              <img
-                src="${escapeHtml(project.cover_image)}"
-                alt="${title}"
-                loading="lazy"
-              >
-            `
-            : `
-              <div class="project-placeholder">
-                B07
-              </div>
-            `;
-
-
-        const projectLink =
-          project.project_url
-            ? `
-              <a
-                href="${escapeHtml(project.project_url)}"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="button button-secondary"
-              >
-                مشاهدة المشروع
-              </a>
-            `
-            : "";
-
-
-        return `
-          <article class="project-card">
-
-            <div class="project-media">
-              ${image}
-            </div>
-
-            <div class="project-content">
-
-              <p class="eyebrow">
-                ${category}
-              </p>
-
-              <h3>
-                ${title}
-              </h3>
-
-              <p>
-                ${description}
-              </p>
-
-              ${projectLink}
-
-            </div>
-
-          </article>
-        `;
-
-      })
-      .join("");
-}
-
-
-/* =========================
-   Start
-========================= */
-
-document.addEventListener(
-  "DOMContentLoaded",
-  fetchProjects
-);
+          }
