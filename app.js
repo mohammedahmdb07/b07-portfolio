@@ -40,6 +40,7 @@ function showMessage(text) {
     return;
   }
 
+
   projectsGrid.innerHTML = `
     <div class="loading-state">
       <p>${escapeHtml(text)}</p>
@@ -82,7 +83,9 @@ function parseMediaUrls(value) {
       );
 
       return [];
+
     }
+
   }
 
 
@@ -103,9 +106,9 @@ function renderProjectMedia(project) {
     );
 
 
-  /* -------------------------
-     Uploaded media
-  ------------------------- */
+  /* =========================================
+     UPLOADED MEDIA
+  ========================================= */
 
   if (media.length > 0) {
 
@@ -121,7 +124,9 @@ function renderProjectMedia(project) {
 
 
         const url =
-          escapeHtml(item.url);
+          escapeHtml(
+            item.url
+          );
 
 
         const title =
@@ -172,9 +177,9 @@ function renderProjectMedia(project) {
   }
 
 
-  /* -------------------------
-     Cover image fallback
-  ------------------------- */
+  /* =========================================
+     COVER IMAGE FALLBACK
+  ========================================= */
 
   if (project.cover_image) {
 
@@ -195,9 +200,9 @@ function renderProjectMedia(project) {
   }
 
 
-  /* -------------------------
-     Placeholder
-  ------------------------- */
+  /* =========================================
+     PLACEHOLDER
+  ========================================= */
 
   return `
     <div
@@ -217,15 +222,24 @@ function renderProjectMedia(project) {
 
 function openProject(projectId) {
 
-  if (!projectId) {
+  if (
+    projectId === undefined ||
+    projectId === null ||
+    String(projectId).trim() === ""
+  ) {
     return;
   }
 
 
-  window.location.href =
+  const url =
     `project.html?id=${encodeURIComponent(
       projectId
     )}`;
+
+
+  window.location.assign(
+    url
+  );
 
 }
 
@@ -249,31 +263,31 @@ function setupProjectCards() {
 
   cards.forEach(card => {
 
-    /* -------------------------
-       Mouse / Touch
-    ------------------------- */
+    /* =====================================
+       MOUSE / TOUCH
+    ===================================== */
 
     card.addEventListener(
       "click",
       event => {
 
         /*
-          Keep external links working.
+          Keep external project links
+          working normally.
         */
 
         if (
           event.target.closest(
-            ".project-external-link"
+            "a"
           )
         ) {
-
           return;
         }
 
 
         /*
-          Don't navigate when using
-          video controls.
+          Don't open the details page
+          while using video controls.
         */
 
         if (
@@ -281,40 +295,44 @@ function setupProjectCards() {
             "video"
           )
         ) {
-
           return;
         }
 
 
+        const projectId =
+          card.dataset.projectId;
+
+
         openProject(
-          card.dataset.projectId
+          projectId
         );
 
       }
     );
 
 
-    /* -------------------------
-       Keyboard
-    ------------------------- */
+    /* =====================================
+       KEYBOARD ACCESSIBILITY
+    ===================================== */
 
     card.addEventListener(
       "keydown",
       event => {
 
         if (
-          event.key === "Enter" ||
-          event.key === " "
+          event.key !== "Enter" &&
+          event.key !== " "
         ) {
-
-          event.preventDefault();
-
-
-          openProject(
-            card.dataset.projectId
-          );
-
+          return;
         }
+
+
+        event.preventDefault();
+
+
+        openProject(
+          card.dataset.projectId
+        );
 
       }
     );
@@ -345,12 +363,22 @@ async function fetchProjects() {
     );
 
     return;
+
   }
 
 
   projectsGrid.innerHTML = `
     <div class="loading-state">
-      <p>جاري تحميل المشاريع...</p>
+
+      <span
+        class="loading-spinner"
+        aria-hidden="true"
+      ></span>
+
+      <p>
+        جاري تحميل المشاريع...
+      </p>
+
     </div>
   `;
 
@@ -448,19 +476,27 @@ function renderProjects(projects) {
 
     projectsGrid.innerHTML = `
       <div class="loading-state">
+
         <p>
           لا توجد مشاريع منشورة حاليًا.
         </p>
+
       </div>
     `;
 
     return;
+
   }
 
 
   projectsGrid.innerHTML =
     projects
       .map(project => {
+
+        /*
+          IMPORTANT:
+          Keep the real Supabase ID.
+        */
 
         const projectId =
           escapeHtml(
@@ -495,9 +531,9 @@ function renderProjects(projects) {
           );
 
 
-        /*
-          External project link
-        */
+        /* =====================================
+           EXTERNAL PROJECT LINK
+        ===================================== */
 
         const projectLink =
           project.project_url
@@ -562,9 +598,9 @@ function renderProjects(projects) {
       .join("");
 
 
-  /*
-    Activate cards
-  */
+  /* =========================================
+     ENABLE PROJECT CARDS
+  ========================================= */
 
   setupProjectCards();
 
@@ -589,4 +625,4 @@ if (
 
   fetchProjects();
 
-           }
+             }
