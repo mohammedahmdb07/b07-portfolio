@@ -1207,3 +1207,315 @@ video {
   }
 
 }
+/* =========================================
+   B07 MOTION SYSTEM
+   Page transitions + blur reveal
+========================================= */
+
+
+/* =========================
+   PAGE LOAD
+========================= */
+
+body {
+  animation: pageEnter 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageEnter {
+
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+}
+
+
+/* =========================
+   TEXT REVEAL
+========================= */
+
+.hero .eyebrow,
+.hero h1,
+.hero-description,
+.hero-actions,
+.section-heading,
+.about-content,
+.contact-card,
+.project-card {
+  animation:
+    revealUp
+    800ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+
+@keyframes revealUp {
+
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+    filter: blur(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+}
+
+
+/* =========================
+   HERO STAGGER
+========================= */
+
+.hero .eyebrow {
+  animation-delay: 80ms;
+}
+
+.hero h1 {
+  animation-delay: 160ms;
+}
+
+.hero-description {
+  animation-delay: 260ms;
+}
+
+.hero-actions {
+  animation-delay: 360ms;
+}
+
+
+/* =========================
+   SECTION STAGGER
+========================= */
+
+.section-heading {
+  animation-delay: 100ms;
+}
+
+.about-content {
+  animation-delay: 220ms;
+}
+
+.contact-card {
+  animation-delay: 160ms;
+}
+
+
+/* =========================
+   PROFILE IMAGE
+========================= */
+
+.about-image {
+  animation:
+    imageReveal
+    900ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+
+@keyframes imageReveal {
+
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+    filter: blur(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+
+}
+
+
+/* =========================
+   PROJECT CARDS
+========================= */
+
+.project-card {
+  transition:
+    transform 350ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 350ms ease,
+    box-shadow 350ms ease;
+}
+
+
+.project-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+
+/* =========================
+   PROJECT MEDIA
+========================= */
+
+.project-media img,
+.project-media video {
+  transition:
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 600ms ease;
+}
+
+
+.project-card:hover .project-media img,
+.project-card:hover .project-media video {
+  transform: scale(1.045);
+}
+
+
+/* =========================
+   BUTTON MOTION
+========================= */
+
+.button {
+  transition:
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 250ms ease,
+    color 250ms ease,
+    border-color 250ms ease,
+    box-shadow 300ms ease;
+}
+
+
+.button:hover {
+  transform: translateY(-3px);
+}
+
+
+.button:active {
+  transform: translateY(0) scale(0.97);
+}
+
+
+/* =========================
+   NAVIGATION
+========================= */
+
+.main-nav a {
+  position: relative;
+  transition:
+    color 250ms ease,
+    opacity 250ms ease;
+}
+
+
+.main-nav a::after {
+  content: "";
+
+  position: absolute;
+
+  right: 0;
+  bottom: -7px;
+
+  width: 0;
+  height: 1px;
+
+  background: currentColor;
+
+  transition:
+    width 300ms
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.main-nav a:hover::after {
+  width: 100%;
+}
+
+
+/* =========================
+   LOGO
+========================= */
+
+.logo {
+  transition:
+    transform 300ms ease,
+    opacity 250ms ease;
+}
+
+
+.logo:hover {
+  transform: translateY(-2px);
+  opacity: 0.75;
+}
+
+
+/* =========================
+   SMOOTH IMAGE HOVER
+========================= */
+
+.about-image {
+  transition:
+    transform 500ms
+    cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 500ms ease;
+}
+
+
+.about-image:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, 0.35);
+}
+
+
+/* =========================
+   PAGE LINK EXIT
+========================= */
+
+a[href$=".html"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =========================
+   REDUCED MOTION
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  body,
+  .hero .eyebrow,
+  .hero h1,
+  .hero-description,
+  .hero-actions,
+  .section-heading,
+  .about-content,
+  .contact-card,
+  .project-card,
+  .about-image {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+
+  .project-card,
+  .project-media img,
+  .project-media video,
+  .button,
+  .main-nav a,
+  .logo,
+  .about-image {
+    transition: none !important;
+  }
+
+}
