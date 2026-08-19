@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="B07 Portfolio — معرض أعمال ومشاريع احترافي."
+  >
+
+  <meta
+    name="theme-color"
+    content="#0a0a0a"
+  >
+
+  <title>B07 Portfolio</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- =========================
+       HEADER
+  ========================== -->
+
+  <header class="site-header">
+    <div class="container nav-container">
+
+      <a
+        href="#home"
+        class="logo"
+        aria-label="B07 Portfolio"
+      >
+        B07
+      </a>
+
+      <button
+        class="menu-toggle"
+        id="menu-toggle"
+        type="button"
+        aria-label="فتح القائمة"
+        aria-expanded="false"
+        aria-controls="main-navigation"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav
+        class="main-nav"
+        id="main-navigation"
+        aria-label="التنقل الرئيسي"
+      >
+        <a href="#home">الرئيسية</a>
+        <a href="#projects">المشاريع</a>
+        <a href="#about">عنّي</a>
+        <a href="#contact">تواصل</a>
+      </nav>
+
+    </div>
+  </header>
+
+
+  <!-- =========================
+       MAIN
+  ========================== -->
+
+  <main>
+
+    <!-- HERO -->
+
+    <section
+      id="home"
+      class="hero"
+      aria-labelledby="hero-title"
+    >
+
+      <div class="container hero-content">
+
+        <p class="eyebrow">
+          B07 PORTFOLIO
+        </p>
+
+        <h1 id="hero-title">
+          أعمال تُعرض
+          <span>بطريقة مختلفة.</span>
+        </h1>
+
+        <p class="hero-description">
+          معرض أعمال احترافي لعرض المشاريع،
+          الصور والفيديوهات في تجربة سريعة
+          ومتجاوبة مع جميع الأجهزة.
+        </p>
+
+        <div class="hero-actions">
+
+          <a
+            href="#projects"
+            class="button button-primary"
+          >
+            استكشف المشاريع
+          </a>
+
+          <a
+            href="#contact"
+            class="button button-secondary"
+          >
+            تواصل معي
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PROJECTS -->
+
+    <section
+      id="projects"
+      class="projects-section section"
+      aria-labelledby="projects-title"
+    >
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+            <p class="eyebrow">
+              SELECTED WORK
+            </p>
+
+            <h2 id="projects-title">
+              المشاريع
+            </h2>
+          </div>
+
+          <p class="section-description">
+            مجموعة من الأعمال والمشاريع المختارة.
+          </p>
+
+        </div>
+
+
+        <div
+          id="projects-grid"
+          class="projects-grid"
+          aria-live="polite"
+        >
+
+          <!--
+            سيتم تحميل المشاريع من Supabase
+            بواسطة JavaScript لاحقًا.
+          -->
+
+          <div class="loading-state">
+            <span class="loading-spinner"></span>
+            <p>جاري تحميل المشاريع...</p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ABOUT -->
+
+    <section
+      id="about"
+      class="about-section section"
+      aria-labelledby="about-title"
+    >
+
+      <div class="container">
+
+        <div class="about-grid">
+
+          <div class="section-heading">
+
+            <p class="eyebrow">
+              ABOUT ME
+            </p>
+
+            <h2 id="about-title">
+              عنّي
+            </h2>
+
+          </div>
+
+          <div class="about-content">
+
+            <p>
+              هنا ستظهر نبذة تعريفية احترافية عن صاحب
+              الموقع وخبراته ومجالات عمله.
+            </p>
+
+            <p>
+              سيتم تخصيص هذا القسم لاحقًا بما يتناسب
+              مع هويتك الشخصية ومجال عملك.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- CONTACT -->
+
+    <section
+      id="contact"
+      class="contact-section section"
+      aria-labelledby="contact-title"
+    >
+
+      <div class="container">
+
+        <div class="contact-card">
+
+          <p class="eyebrow">
+            CONTACT
+          </p>
+
+          <h2 id="contact-title">
+            لديك مشروع؟
+          </h2>
+
+          <p>
+            تواصل معي لمناقشة مشروعك أو فكرة جديدة.
+          </p>
+
+          <a
+            href="mailto:"
+            class="button button-primary"
+            id="contact-email"
+          >
+            تواصل معي
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================
+       FOOTER
+  ========================== -->
+
+  <footer class="site-footer">
+
+    <div class="container footer-content">
+
+      <p>
+        © <span id="current-year"></span>
+        B07 Portfolio
+      </p>
+
+      <a href="#home">
+        العودة للأعلى
+      </a>
+
+    </div>
+
+  </footer>
+
+
+  <!-- =========================
+       JAVASCRIPT
+  ========================== -->
+
+  <script>
+    "use strict";
+
+    /*
+      سيتم ربط Supabase هنا لاحقًا
+      في ملف JavaScript منفصل.
+
+      لا نضع أي Secret Keys هنا.
+    */
+
+    const yearElement =
+      document.getElementById("current-year");
+
+    if (yearElement) {
+      yearElement.textContent =
+        new Date().getFullYear();
+    }
+
+
+    /*
+      Mobile Navigation
+    */
+
+    const menuToggle =
+      document.getElementById("menu-toggle");
+
+    const mainNavigation =
+      document.getElementById("main-navigation");
+
+    if (menuToggle && mainNavigation) {
+
+      menuToggle.addEventListener(
+        "click",
+        () => {
+
+          const isOpen =
+            menuToggle.getAttribute(
+              "aria-expanded"
+            ) === "true";
+
+          menuToggle.setAttribute(
+            "aria-expanded",
+            String(!isOpen)
+          );
+
+          mainNavigation.classList.toggle(
+            "is-open"
+          );
+
+        }
+      );
+
+
+      mainNavigation
+        .querySelectorAll("a")
+        .forEach((link) => {
+
+          link.addEventListener(
+            "click",
+            () => {
+
+              menuToggle.setAttribute(
+                "aria-expanded",
+                "false"
+              );
+
+              mainNavigation.classList.remove(
+                "is-open"
+              );
+
+            }
+          );
+
+        });
+
+    }
+
+  </script>
+
+</body>
+  </html>
