@@ -13,7 +13,9 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 
 const projectsGrid =
-  document.getElementById("projects-grid");
+  document.getElementById(
+    "projects-grid"
+  );
 
 
 /* =========================================
@@ -28,6 +30,7 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
 }
 
 
@@ -42,6 +45,7 @@ function showMessage(text) {
       <p>${escapeHtml(text)}</p>
     </div>
   `;
+
 }
 
 
@@ -83,6 +87,7 @@ function parseMediaUrls(value) {
 
 
   return [];
+
 }
 
 
@@ -118,6 +123,7 @@ function renderProjectMedia(project) {
         const url =
           escapeHtml(item.url);
 
+
         const title =
           escapeHtml(
             project.title ||
@@ -147,6 +153,7 @@ function renderProjectMedia(project) {
               playsinline
             ></video>
           `;
+
         }
 
 
@@ -161,6 +168,7 @@ function renderProjectMedia(project) {
 
       })
       .join("");
+
   }
 
 
@@ -177,11 +185,13 @@ function renderProjectMedia(project) {
           project.cover_image
         )}"
         alt="${escapeHtml(
-          project.title
+          project.title ||
+          "B07 Project"
         )}"
         loading="lazy"
       >
     `;
+
   }
 
 
@@ -197,6 +207,120 @@ function renderProjectMedia(project) {
       B07
     </div>
   `;
+
+}
+
+
+/* =========================================
+   OPEN PROJECT DETAILS
+========================================= */
+
+function openProject(projectId) {
+
+  if (!projectId) {
+    return;
+  }
+
+
+  window.location.href =
+    `project.html?id=${encodeURIComponent(
+      projectId
+    )}`;
+
+}
+
+
+/* =========================================
+   PROJECT CARD INTERACTION
+========================================= */
+
+function setupProjectCards() {
+
+  if (!projectsGrid) {
+    return;
+  }
+
+
+  const cards =
+    projectsGrid.querySelectorAll(
+      ".project-card[data-project-id]"
+    );
+
+
+  cards.forEach(card => {
+
+    /* -------------------------
+       Mouse / Touch
+    ------------------------- */
+
+    card.addEventListener(
+      "click",
+      event => {
+
+        /*
+          Keep external links working.
+        */
+
+        if (
+          event.target.closest(
+            ".project-external-link"
+          )
+        ) {
+
+          return;
+        }
+
+
+        /*
+          Don't navigate when using
+          video controls.
+        */
+
+        if (
+          event.target.closest(
+            "video"
+          )
+        ) {
+
+          return;
+        }
+
+
+        openProject(
+          card.dataset.projectId
+        );
+
+      }
+    );
+
+
+    /* -------------------------
+       Keyboard
+    ------------------------- */
+
+    card.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+
+          event.preventDefault();
+
+
+          openProject(
+            card.dataset.projectId
+          );
+
+        }
+
+      }
+    );
+
+  });
+
 }
 
 
@@ -243,6 +367,7 @@ async function fetchProjects() {
           method: "GET",
 
           headers: {
+
             apikey:
               SUPABASE_PUBLISHABLE_KEY,
 
@@ -251,6 +376,7 @@ async function fetchProjects() {
 
             "Content-Type":
               "application/json"
+
           }
         }
       );
@@ -261,14 +387,17 @@ async function fetchProjects() {
       const errorText =
         await response.text();
 
+
       console.error(
         "Supabase error:",
         errorText
       );
 
+
       throw new Error(
         `HTTP ${response.status}`
       );
+
     }
 
 
@@ -291,10 +420,13 @@ async function fetchProjects() {
       error
     );
 
+
     showMessage(
       "تعذر تحميل المشاريع حاليًا."
     );
+
   }
+
 }
 
 
@@ -330,6 +462,12 @@ function renderProjects(projects) {
     projects
       .map(project => {
 
+        const projectId =
+          escapeHtml(
+            project.id
+          );
+
+
         const title =
           escapeHtml(
             project.title ||
@@ -357,6 +495,10 @@ function renderProjects(projects) {
           );
 
 
+        /*
+          External project link
+        */
+
         const projectLink =
           project.project_url
             ? `
@@ -366,7 +508,7 @@ function renderProjects(projects) {
                 )}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="button button-secondary"
+                class="button button-secondary project-external-link"
               >
                 مشاهدة المشروع
               </a>
@@ -377,6 +519,10 @@ function renderProjects(projects) {
         return `
           <article
             class="project-card"
+            data-project-id="${projectId}"
+            tabindex="0"
+            role="link"
+            aria-label="فتح مشروع ${title}"
           >
 
             <div
@@ -414,6 +560,14 @@ function renderProjects(projects) {
 
       })
       .join("");
+
+
+  /*
+    Activate cards
+  */
+
+  setupProjectCards();
+
 }
 
 
@@ -435,4 +589,4 @@ if (
 
   fetchProjects();
 
-          }
+           }
