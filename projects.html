@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -11,7 +12,7 @@
 
   <meta
     name="description"
-    content="مشاريع محمد أحمد — معرض الأعمال والتصاميم."
+    content="تفاصيل مشروع محمد أحمد."
   >
 
   <meta
@@ -19,13 +20,15 @@
     content="#080808"
   >
 
-  <title>المشاريع | محمد أحمد</title>
+  <title>المشروع | محمد أحمد</title>
 
   <link
     rel="stylesheet"
     href="style.css"
   >
+
 </head>
+
 
 <body>
 
@@ -101,56 +104,113 @@
   <main>
 
     <section
-      class="projects-section section"
-      aria-labelledby="projects-title"
+      class="project-details-section section"
+      aria-labelledby="project-title"
     >
 
       <div class="container">
 
-        <div class="section-heading">
+        <!-- LOADING -->
 
-          <div>
+        <div
+          id="project-loading"
+          class="loading-state"
+        >
 
-            <p class="eyebrow">
-              SELECTED WORK
-            </p>
+          <span
+            class="loading-spinner"
+            aria-hidden="true"
+          ></span>
 
-            <h1 id="projects-title">
-              المشاريع
-            </h1>
-
-          </div>
-
-
-          <p class="section-description">
-            مجموعة من الأعمال والمشاريع المختارة.
+          <p>
+            جاري تحميل المشروع...
           </p>
 
         </div>
 
 
-        <!-- =========================
-             PROJECTS GRID
-        ========================== -->
+        <!-- PROJECT -->
 
-        <div
-          id="projects-grid"
-          class="projects-grid"
-          aria-live="polite"
+        <article
+          id="project-details"
+          class="project-details"
+          hidden
         >
 
-          <div class="loading-state">
+          <div class="project-details-heading">
 
-            <span
-              class="loading-spinner"
-              aria-hidden="true"
-            ></span>
-
-            <p>
-              جاري تحميل المشاريع...
+            <p
+              id="project-category"
+              class="eyebrow"
+            >
+              PROJECT
             </p>
 
+
+            <h1 id="project-title">
+              المشروع
+            </h1>
+
+
+            <p
+              id="project-description"
+              class="project-details-description"
+            ></p>
+
           </div>
+
+
+          <!-- MEDIA -->
+
+          <div
+            id="project-media"
+            class="project-details-media"
+          ></div>
+
+
+          <!-- EXTERNAL LINK -->
+
+          <div
+            id="project-actions"
+            class="project-details-actions"
+          ></div>
+
+
+          <!-- BACK -->
+
+          <div class="project-back">
+
+            <a
+              href="projects.html"
+              class="button button-secondary"
+            >
+              العودة للمشاريع
+            </a>
+
+          </div>
+
+        </article>
+
+
+        <!-- ERROR -->
+
+        <div
+          id="project-error"
+          class="loading-state"
+          hidden
+        >
+
+          <p id="project-error-message">
+            تعذر تحميل المشروع.
+          </p>
+
+
+          <a
+            href="projects.html"
+            class="button button-secondary"
+          >
+            العودة للمشاريع
+          </a>
 
         </div>
 
@@ -186,17 +246,13 @@
 
 
   <!-- =========================
-       JAVASCRIPT
+       MOBILE MENU
   ========================== -->
 
   <script>
 
     "use strict";
 
-
-    /* =========================
-       CURRENT YEAR
-    ========================== */
 
     const yearElement =
       document.getElementById(
@@ -211,10 +267,6 @@
 
     }
 
-
-    /* =========================
-       MOBILE MENU
-    ========================== */
 
     const menuToggle =
       document.getElementById(
@@ -259,7 +311,7 @@
 
       mainNavigation
         .querySelectorAll("a")
-        .forEach((link) => {
+        .forEach(link => {
 
           link.addEventListener(
             "click",
@@ -286,11 +338,11 @@
 
 
   <!-- =========================
-       SUPABASE PROJECTS
+       PROJECT DETAILS
   ========================== -->
 
   <script
-    src="app.js"
+    src="project.js"
     defer
   ></script>
 
