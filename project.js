@@ -51,9 +51,9 @@ const mediaElement =
     "project-media"
   );
 
-const projectLink =
+const projectActions =
   document.getElementById(
-    "project-link"
+    "project-actions"
   );
 
 
@@ -69,6 +69,7 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
 }
 
 
@@ -101,11 +102,14 @@ function parseMediaUrls(value) {
       );
 
       return [];
+
     }
+
   }
 
 
   return [];
+
 }
 
 
@@ -119,9 +123,11 @@ function showProject() {
     loadingElement.hidden = true;
   }
 
+
   if (errorElement) {
     errorElement.hidden = true;
   }
+
 
   if (projectElement) {
     projectElement.hidden = false;
@@ -130,18 +136,34 @@ function showProject() {
 }
 
 
-function showError() {
+function showError(message) {
 
   if (loadingElement) {
     loadingElement.hidden = true;
   }
 
+
   if (projectElement) {
     projectElement.hidden = true;
   }
 
+
   if (errorElement) {
     errorElement.hidden = false;
+  }
+
+
+  const errorMessage =
+    document.getElementById(
+      "project-error-message"
+    );
+
+
+  if (errorMessage && message) {
+
+    errorMessage.textContent =
+      message;
+
   }
 
 }
@@ -168,7 +190,7 @@ function renderProjectMedia(project) {
 
 
   /* -------------------------
-     Multiple uploaded media
+     Uploaded media
   ------------------------- */
 
   if (media.length > 0) {
@@ -184,16 +206,26 @@ function renderProjectMedia(project) {
         }
 
 
-        const url =
-          escapeHtml(
-            item.url
+        const wrapper =
+          document.createElement(
+            "div"
           );
+
+
+        wrapper.className =
+          "project-detail-media-item";
 
 
         const title =
           escapeHtml(
             project.title ||
             "B07 Project"
+          );
+
+
+        const url =
+          escapeHtml(
+            item.url
           );
 
 
@@ -208,19 +240,7 @@ function renderProjectMedia(project) {
           );
 
 
-        const wrapper =
-          document.createElement(
-            "div"
-          );
-
-
-        wrapper.className =
-          "project-detail-media-item";
-
-
-        /*
-          VIDEO
-        */
+        /* VIDEO */
 
         if (isVideo) {
 
@@ -237,9 +257,7 @@ function renderProjectMedia(project) {
         }
 
 
-        /*
-          IMAGE
-        */
+        /* IMAGE */
 
         else {
 
@@ -270,12 +288,10 @@ function renderProjectMedia(project) {
 
 
   /* -------------------------
-     Cover fallback
+     Cover image fallback
   ------------------------- */
 
-  else if (
-    project.cover_image
-  ) {
+  else if (project.cover_image) {
 
     const wrapper =
       document.createElement(
@@ -339,6 +355,58 @@ function renderProjectMedia(project) {
 
 
 /* =========================================
+   EXTERNAL PROJECT LINK
+========================================= */
+
+function renderProjectActions(project) {
+
+  if (!projectActions) {
+    return;
+  }
+
+
+  projectActions.innerHTML = "";
+
+
+  if (!project.project_url) {
+    return;
+  }
+
+
+  const link =
+    document.createElement(
+      "a"
+    );
+
+
+  link.href =
+    project.project_url;
+
+
+  link.target =
+    "_blank";
+
+
+  link.rel =
+    "noopener noreferrer";
+
+
+  link.className =
+    "button button-secondary";
+
+
+  link.textContent =
+    "مشاهدة المشروع";
+
+
+  projectActions.appendChild(
+    link
+  );
+
+}
+
+
+/* =========================================
    LOAD PROJECT
 ========================================= */
 
@@ -356,20 +424,12 @@ async function fetchProject() {
 
   if (!projectId) {
 
-    showError();
+    showError(
+      "لم يتم تحديد المشروع."
+    );
 
     return;
-  }
 
-
-  if (
-    !SUPABASE_URL ||
-    !SUPABASE_PUBLISHABLE_KEY
-  ) {
-
-    showError();
-
-    return;
   }
 
 
@@ -397,6 +457,7 @@ async function fetchProject() {
 
             "Content-Type":
               "application/json"
+
           }
         }
       );
@@ -407,10 +468,12 @@ async function fetchProject() {
       const errorText =
         await response.text();
 
+
       console.error(
         "Supabase project error:",
         errorText
       );
+
 
       throw new Error(
         `HTTP ${response.status}`
@@ -428,9 +491,12 @@ async function fetchProject() {
       projects.length === 0
     ) {
 
-      showError();
+      showError(
+        "المشروع غير موجود أو غير منشور."
+      );
 
       return;
+
     }
 
 
@@ -478,13 +544,9 @@ async function fetchProject() {
 
     if (descriptionElement) {
 
-      const description =
+      descriptionElement.textContent =
         project.description ||
         "مشروع من أعمال B07.";
-
-
-      descriptionElement.textContent =
-        description;
 
     }
 
@@ -499,21 +561,12 @@ async function fetchProject() {
 
 
     /* =========================================
-       EXTERNAL PROJECT LINK
+       PROJECT LINK
     ========================================= */
 
-    if (
-      projectLink &&
-      project.project_url
-    ) {
-
-      projectLink.href =
-        project.project_url;
-
-      projectLink.hidden =
-        false;
-
-    }
+    renderProjectActions(
+      project
+    );
 
 
     /* =========================================
@@ -522,15 +575,19 @@ async function fetchProject() {
 
     showProject();
 
+  }
 
-  } catch (error) {
+  catch (error) {
 
     console.error(
       "Failed to load project:",
       error
     );
 
-    showError();
+
+    showError(
+      "تعذر تحميل المشروع حاليًا."
+    );
 
   }
 
@@ -555,4 +612,4 @@ if (
 
   fetchProject();
 
-      }
+  }
