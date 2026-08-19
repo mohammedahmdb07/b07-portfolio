@@ -1,134 +1,64 @@
 "use strict";
 
-/* =========================================
-   B07 PORTFOLIO
-   Single Project Details
-========================================= */
+/*
+  PROJECT DETAILS PAGE
+  Reads the project ID from:
+  project.html?id=PROJECT_ID
+*/
+
+const loadingElement =
+  document.getElementById("project-loading");
+
+const errorElement =
+  document.getElementById("project-error");
+
+const projectElement =
+  document.getElementById("project-details");
+
+const titleElement =
+  document.getElementById("project-title");
+
+const categoryElement =
+  document.getElementById("project-category");
+
+const descriptionElement =
+  document.getElementById("project-description");
+
+const mediaElement =
+  document.getElementById("project-media");
+
+const projectLink =
+  document.getElementById("project-link");
+
+
+/*
+  SUPABASE
+  نفس المشروع المستخدم في app.js
+*/
 
 const SUPABASE_URL =
   "https://vzmrdfyxzjbrgbcgydbb.supabase.co";
 
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_lMrhyGww4C8LZW9Db4_Puw_35HXrOJC";
+const SUPABASE_ANON_KEY =
+  "ضع_مفتاح_Supabase_نفسه_الموجود_في_app.js";
 
 
-/* =========================================
-   ELEMENTS
-========================================= */
+/*
+  GET PROJECT ID
+*/
 
-const loadingElement =
-  document.getElementById(
-    "project-loading"
+const params =
+  new URLSearchParams(
+    window.location.search
   );
 
-const errorElement =
-  document.getElementById(
-    "project-error"
-  );
-
-const projectElement =
-  document.getElementById(
-    "project-details"
-  );
-
-const titleElement =
-  document.getElementById(
-    "project-title"
-  );
-
-const categoryElement =
-  document.getElementById(
-    "project-category"
-  );
-
-const descriptionElement =
-  document.getElementById(
-    "project-description"
-  );
-
-const mediaElement =
-  document.getElementById(
-    "project-media"
-  );
-
-const projectLink =
-  document.getElementById(
-    "project-link"
-  );
+const projectId =
+  params.get("id");
 
 
-/* =========================================
-   HELPERS
-========================================= */
-
-function escapeHtml(value) {
-
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-
-function parseMediaUrls(value) {
-
-  if (Array.isArray(value)) {
-    return value;
-  }
-
-
-  if (
-    typeof value === "string" &&
-    value.trim() !== ""
-  ) {
-
-    try {
-
-      const parsed =
-        JSON.parse(value);
-
-      return Array.isArray(parsed)
-        ? parsed
-        : [];
-
-    } catch (error) {
-
-      console.error(
-        "media_urls JSON error:",
-        error
-      );
-
-      return [];
-    }
-  }
-
-
-  return [];
-}
-
-
-/* =========================================
-   SHOW / HIDE
-========================================= */
-
-function showProject() {
-
-  if (loadingElement) {
-    loadingElement.hidden = true;
-  }
-
-  if (errorElement) {
-    errorElement.hidden = true;
-  }
-
-  if (projectElement) {
-    projectElement.hidden = false;
-  }
-
-}
-
+/*
+  HELPERS
+*/
 
 function showError() {
 
@@ -147,275 +77,133 @@ function showError() {
 }
 
 
-/* =========================================
-   RENDER MEDIA
-========================================= */
+function showProject() {
 
-function renderProjectMedia(project) {
-
-  if (!mediaElement) {
-    return;
+  if (loadingElement) {
+    loadingElement.hidden = true;
   }
 
-
-  mediaElement.innerHTML = "";
-
-
-  const media =
-    parseMediaUrls(
-      project.media_urls
-    );
-
-
-  /* -------------------------
-     Multiple uploaded media
-  ------------------------- */
-
-  if (media.length > 0) {
-
-    media.forEach(
-      (item, index) => {
-
-        if (
-          !item ||
-          !item.url
-        ) {
-          return;
-        }
-
-
-        const url =
-          escapeHtml(
-            item.url
-          );
-
-
-        const title =
-          escapeHtml(
-            project.title ||
-            "B07 Project"
-          );
-
-
-        const isVideo =
-          item.type === "video" ||
-          (
-            typeof item.mime_type ===
-            "string" &&
-            item.mime_type.startsWith(
-              "video/"
-            )
-          );
-
-
-        const wrapper =
-          document.createElement(
-            "div"
-          );
-
-
-        wrapper.className =
-          "project-detail-media-item";
-
-
-        /*
-          VIDEO
-        */
-
-        if (isVideo) {
-
-          wrapper.innerHTML = `
-            <video
-              class="project-detail-video"
-              src="${url}"
-              controls
-              preload="metadata"
-              playsinline
-            ></video>
-          `;
-
-        }
-
-
-        /*
-          IMAGE
-        */
-
-        else {
-
-          wrapper.innerHTML = `
-            <img
-              class="project-detail-image"
-              src="${url}"
-              alt="${title} - ${index + 1}"
-              loading="${
-                index === 0
-                  ? "eager"
-                  : "lazy"
-              }"
-            >
-          `;
-
-        }
-
-
-        mediaElement.appendChild(
-          wrapper
-        );
-
-      }
-    );
-
+  if (errorElement) {
+    errorElement.hidden = true;
   }
 
-
-  /* -------------------------
-     Cover fallback
-  ------------------------- */
-
-  else if (
-    project.cover_image
-  ) {
-
-    const wrapper =
-      document.createElement(
-        "div"
-      );
-
-
-    wrapper.className =
-      "project-detail-media-item";
-
-
-    wrapper.innerHTML = `
-      <img
-        class="project-detail-image"
-        src="${escapeHtml(
-          project.cover_image
-        )}"
-        alt="${escapeHtml(
-          project.title ||
-          "B07 Project"
-        )}"
-        loading="eager"
-      >
-    `;
-
-
-    mediaElement.appendChild(
-      wrapper
-    );
-
-  }
-
-
-  /* -------------------------
-     Placeholder
-  ------------------------- */
-
-  else {
-
-    const placeholder =
-      document.createElement(
-        "div"
-      );
-
-
-    placeholder.className =
-      "project-placeholder";
-
-
-    placeholder.textContent =
-      "B07";
-
-
-    mediaElement.appendChild(
-      placeholder
-    );
-
+  if (projectElement) {
+    projectElement.hidden = false;
   }
 
 }
 
 
-/* =========================================
-   LOAD PROJECT
-========================================= */
+/*
+  CREATE MEDIA
+*/
 
-async function fetchProject() {
+function createMedia(url, type) {
 
-  const params =
-    new URLSearchParams(
-      window.location.search
+  if (!url) {
+    return null;
+  }
+
+
+  const mediaType =
+    String(type || "").toLowerCase();
+
+
+  /*
+    VIDEO
+  */
+
+  if (
+    mediaType.includes("video") ||
+    /\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(url)
+  ) {
+
+    const video =
+      document.createElement("video");
+
+    video.src = url;
+
+    video.controls = true;
+
+    video.playsInline = true;
+
+    video.preload = "metadata";
+
+    video.setAttribute(
+      "aria-label",
+      "فيديو المشروع"
     );
 
+    return video;
 
-  const projectId =
-    params.get("id");
+  }
 
+
+  /*
+    IMAGE
+  */
+
+  const image =
+    document.createElement("img");
+
+  image.src = url;
+
+  image.alt =
+    titleElement?.textContent ||
+    "صورة المشروع";
+
+  image.loading = "eager";
+
+  return image;
+
+}
+
+
+/*
+  LOAD PROJECT
+*/
+
+async function loadProject() {
 
   if (!projectId) {
 
     showError();
 
     return;
-  }
 
-
-  if (
-    !SUPABASE_URL ||
-    !SUPABASE_PUBLISHABLE_KEY
-  ) {
-
-    showError();
-
-    return;
   }
 
 
   try {
 
+    /*
+      Get project from Supabase REST API.
+
+      NOTE:
+      The table name is assumed to be "projects".
+      If your app.js uses another table name,
+      use the same one there.
+    */
+
     const response =
       await fetch(
-        `${SUPABASE_URL}/rest/v1/projects` +
-        `?select=id,title,description,category,cover_image,media_urls,project_url,sort_order,created_at,is_published` +
-        `&id=eq.${encodeURIComponent(
-          projectId
-        )}` +
-        `&is_published=eq.true` +
-        `&limit=1`,
+        `${SUPABASE_URL}/rest/v1/projects?id=eq.${encodeURIComponent(projectId)}&select=*`,
         {
           method: "GET",
 
           headers: {
-
-            apikey:
-              SUPABASE_PUBLISHABLE_KEY,
-
-            Authorization:
-              `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-
-            "Content-Type":
-              "application/json"
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization":
+              `Bearer ${SUPABASE_ANON_KEY}`
           }
         }
       );
 
 
     if (!response.ok) {
-
-      const errorText =
-        await response.text();
-
-      console.error(
-        "Supabase project error:",
-        errorText
-      );
-
       throw new Error(
-        `HTTP ${response.status}`
+        "Failed to load project."
       );
-
     }
 
 
@@ -431,6 +219,7 @@ async function fetchProject() {
       showError();
 
       return;
+
     }
 
 
@@ -438,20 +227,19 @@ async function fetchProject() {
       projects[0];
 
 
-    /* =========================================
-       TITLE
-    ========================================= */
+    /*
+      TITLE
+    */
 
     const title =
       project.title ||
-      "بدون عنوان";
+      project.name ||
+      "مشروع بدون عنوان";
 
 
     if (titleElement) {
-
       titleElement.textContent =
         title;
-
     }
 
 
@@ -459,56 +247,62 @@ async function fetchProject() {
       `${title} | محمد أحمد`;
 
 
-    /* =========================================
-       CATEGORY
-    ========================================= */
+    /*
+      CATEGORY
+    */
+
+    const category =
+      project.category ||
+      project.type ||
+      project.project_type ||
+      "PROJECT";
+
 
     if (categoryElement) {
-
       categoryElement.textContent =
-        project.category ||
-        "PROJECT";
-
+        category;
     }
 
 
-    /* =========================================
-       DESCRIPTION
-    ========================================= */
+    /*
+      DESCRIPTION
+    */
+
+    const description =
+      project.description ||
+      project.details ||
+      project.content ||
+      "";
+
 
     if (descriptionElement) {
-
-      const description =
-        project.description ||
-        "مشروع من أعمال B07.";
-
 
       descriptionElement.textContent =
         description;
 
+      descriptionElement.hidden =
+        !description;
+
     }
 
 
-    /* =========================================
-       MEDIA
-    ========================================= */
+    /*
+      PROJECT LINK
+    */
 
-    renderProjectMedia(
-      project
-    );
+    const externalLink =
+      project.project_url ||
+      project.url ||
+      project.link;
 
-
-    /* =========================================
-       EXTERNAL PROJECT LINK
-    ========================================= */
 
     if (
       projectLink &&
-      project.project_url
+      externalLink
     ) {
 
       projectLink.href =
-        project.project_url;
+        externalLink;
 
       projectLink.hidden =
         false;
@@ -516,9 +310,76 @@ async function fetchProject() {
     }
 
 
-    /* =========================================
-       SHOW
-    ========================================= */
+    /*
+      MEDIA
+    */
+
+    mediaElement.innerHTML = "";
+
+
+    /*
+      Possible media fields.
+      The first available one is used.
+    */
+
+    const mediaUrl =
+      project.media_url ||
+      project.image_url ||
+      project.image ||
+      project.thumbnail_url ||
+      project.file_url ||
+      project.url;
+
+
+    if (mediaUrl) {
+
+      const media =
+        createMedia(
+          mediaUrl,
+          project.media_type ||
+          project.type
+        );
+
+
+      if (media) {
+
+        mediaElement.appendChild(
+          media
+        );
+
+      }
+
+    }
+
+
+    /*
+      If there is no media,
+      show a simple placeholder.
+    */
+
+    if (
+      !mediaElement.children.length
+    ) {
+
+      const placeholder =
+        document.createElement("div");
+
+      placeholder.className =
+        "project-placeholder";
+
+      placeholder.textContent =
+        "B07";
+
+      mediaElement.appendChild(
+        placeholder
+      );
+
+    }
+
+
+    /*
+      SUCCESS
+    */
 
     showProject();
 
@@ -526,7 +387,7 @@ async function fetchProject() {
   } catch (error) {
 
     console.error(
-      "Failed to load project:",
+      "Project loading error:",
       error
     );
 
@@ -537,22 +398,4 @@ async function fetchProject() {
 }
 
 
-/* =========================================
-   START
-========================================= */
-
-if (
-  document.readyState ===
-  "loading"
-) {
-
-  document.addEventListener(
-    "DOMContentLoaded",
-    fetchProject
-  );
-
-} else {
-
-  fetchProject();
-
-          }
+loadProject();
