@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>B07 Admin Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="admin-page">
+
+    <div class="container">
+
+      <header class="admin-header">
+        <p class="eyebrow">B07 PORTFOLIO</p>
+        <h1>لوحة التحكم</h1>
+        <p>إدارة مشاريع البورتفوليو.</p>
+      </header>
+
+      <section class="admin-card">
+
+        <h2>إضافة مشروع</h2>
+
+        <form id="project-form">
+
+          <label for="title">اسم المشروع</label>
+          <input id="title" type="text" required>
+
+          <label for="category">التصنيف</label>
+          <input id="category" type="text">
+
+          <label for="description">الوصف</label>
+          <textarea id="description" rows="5"></textarea>
+
+          <label for="project-url">رابط المشروع</label>
+          <input id="project-url" type="url">
+
+          <label for="cover-image">رابط صورة الغلاف</label>
+          <input id="cover-image" type="url">
+
+          <label for="sort-order">الترتيب</label>
+          <input id="sort-order" type="number" value="0">
+
+          <label>
+            <input id="is-published" type="checkbox" checked>
+            نشر المشروع
+          </label>
+
+          <button
+            type="submit"
+            class="button button-primary"
+          >
+            إضافة المشروع
+          </button>
+
+        </form>
+
+        <p id="dashboard-message"></p>
+
+      </section>
+
+      <section class="admin-card">
+
+        <div class="admin-section-header">
+
+          <h2>المشاريع الحالية</h2>
+
+          <button
+            id="logout-button"
+            class="button button-secondary"
+            type="button"
+          >
+            تسجيل الخروج
+          </button>
+
+        </div>
+
+        <div
+          id="admin-projects"
+          class="projects-grid"
+        >
+          <p>جاري تحميل المشاريع...</p>
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script src="admin-dashboard.js" defer></script>
+
+</body>
+
+</html>
