@@ -11,12 +11,12 @@
 
   <meta
     name="description"
-    content="B07 Portfolio — معرض أعمال محمد أحمد، مصمم جرافيك."
+    content="محمد أحمد — مصمم جرافيك متخصص في البوسترات والفيديوهات والمواقع الإلكترونية."
   >
 
   <meta
     name="theme-color"
-    content="#0a0a0a"
+    content="#080808"
   >
 
   <title>محمد أحمد | B07 Portfolio</title>
@@ -35,7 +35,7 @@
       <a
         href="#home"
         class="logo"
-        aria-label="B07 Portfolio"
+        aria-label="محمد أحمد"
       >
         B07
       </a>
@@ -195,52 +195,66 @@
 
             <img
               src="https://vzmrdfyxzjbrgbcgydbb.supabase.co/storage/v1/object/public/portfolio-media/profile/file_000000009c4081f483487cd7d2df722f.jpg"
-              alt="محمد أحمد - باشاب"
+              alt="محمد أحمد"
               loading="lazy"
             >
 
           </div>
 
 
-          <div class="section-heading">
+          <div class="about-text">
 
-            <p class="eyebrow">
-              ABOUT ME
-            </p>
+            <div class="section-heading">
 
-            <h2 id="about-title">
-              عنّي
-            </h2>
+              <div>
 
-          </div>
+                <p class="eyebrow">
+                  ABOUT ME
+                </p>
+
+                <h2 id="about-title">
+                  عنّي
+                </h2>
+
+              </div>
+
+            </div>
 
 
-          <div class="about-content">
+            <div class="about-content">
 
-            <p>
-              حبابك ألف.
-            </p>
+              <p>
+                حبابك ألف.
+              </p>
 
-            <p>
-              أنا محمد أحمد، معروف بـ(باشاب)، مصمم جرافيك
-              بحب أحوّل الأفكار العادية لحاجة ملفتة ومختلفة.
-            </p>
+              <p>
+                أنا محمد أحمد، مصمم جرافيك بحب أحوّل
+                الأفكار العادية لحاجة ملفتة ومختلفة.
+              </p>
 
-            <p>
-              شغال في تصميم البوسترات، الفيديوهات، والمواقع
-              الإلكترونية، وبشتغل مع مؤسسات، جمعيات، وأفراد،
-              وبحاول دائمًا أطلع كل مشروع بصورة تليق بفكرته وصاحبه.
-            </p>
+              <p>
+                شغال في تصميم البوسترات، الفيديوهات،
+                والمواقع الإلكترونية، وبشتغل مع مؤسسات،
+                جمعيات، وأفراد.
+              </p>
 
-            <p>
-              بالنسبة لي التصميم ما مجرد ألوان وصور؛ التصميم
-              هو طريقة نحكي بيها الفكرة ونخليها توصل بالشكل الصح.
-            </p>
+              <p>
+                وبحاول دائمًا أطلع كل مشروع بصورة تليق
+                بفكرته وصاحبه.
+              </p>
 
-            <p>
-              لو عندك فكرة، مشروع، أو حتى حاجة لسه في بدايتها،
-              خلينا نصممها سوا ونطلعها بصورة مختلفة.
-            </p>
+              <p>
+                بالنسبة لي التصميم ما مجرد ألوان وصور؛
+                التصميم هو طريقة نحكي بيها الفكرة
+                ونخليها توصل بالشكل الصح.
+              </p>
+
+              <p>
+                لو عندك فكرة أو مشروع، خلينا نصممها سوا
+                ونطلعها بصورة مختلفة.
+              </p>
+
+            </div>
 
           </div>
 
@@ -268,20 +282,42 @@
           </p>
 
           <h2 id="contact-title">
-            لديك مشروع؟
+            عندك فكرة؟
           </h2>
 
           <p>
-            تواصل معي لمناقشة مشروعك أو فكرة جديدة.
+            لو عندك مشروع، فكرة، أو محتاج تصميم،
+            تواصل معي ونبدأ نشتغل عليها.
           </p>
 
-          <a
-            href="mailto:"
-            class="button button-primary"
-            id="contact-email"
-          >
-            تواصل معي
-          </a>
+          <div class="hero-actions">
+
+            <a
+              href="https://wa.me/249112854369"
+              class="button button-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              واتساب
+            </a>
+
+            <a
+              href="https://t.me/+249112854369"
+              class="button button-secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              تيليجرام
+            </a>
+
+            <a
+              href="mailto:mohammedahmdb07@gmail.com"
+              class="button button-secondary"
+            >
+              البريد الإلكتروني
+            </a>
+
+          </div>
 
         </div>
 
@@ -318,22 +354,17 @@
 
     "use strict";
 
-
     const yearElement =
       document.getElementById("current-year");
 
-
     if (yearElement) {
-
       yearElement.textContent =
         new Date().getFullYear();
-
     }
 
 
     const menuToggle =
       document.getElementById("menu-toggle");
-
 
     const mainNavigation =
       document.getElementById("main-navigation");
@@ -353,12 +384,10 @@
               "aria-expanded"
             ) === "true";
 
-
           menuToggle.setAttribute(
             "aria-expanded",
             String(!isOpen)
           );
-
 
           mainNavigation.classList.toggle(
             "is-open"
@@ -380,7 +409,6 @@
                 "aria-expanded",
                 "false"
               );
-
 
               mainNavigation.classList.remove(
                 "is-open"
