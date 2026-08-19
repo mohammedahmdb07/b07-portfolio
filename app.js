@@ -127,12 +127,34 @@ function renderMedia(
   project
 ) {
 
-  const media =
-    Array.isArray(
-      project.media_urls
-    )
-      ? project.media_urls
-      : [];
+  let media = [];
+
+if (Array.isArray(project.media_urls)) {
+
+  media = project.media_urls;
+
+} else if (
+  typeof project.media_urls === "string" &&
+  project.media_urls.trim() !== ""
+) {
+
+  try {
+
+    media =
+      JSON.parse(
+        project.media_urls
+      );
+
+  } catch (error) {
+
+    console.error(
+      "Invalid media_urls:",
+      error
+    );
+
+    media = [];
+  }
+}
 
 
   /*
