@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="description"
+    content="تفاصيل مشروع من أعمال محمد أحمد."
+  >
+
+  <meta
+    name="theme-color"
+    content="#080808"
+  >
+
+  <title>المشروع | محمد أحمد</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- HEADER -->
+
+  <header class="site-header">
+
+    <div class="container nav-container">
+
+      <a
+        href="index.html"
+        class="logo"
+        aria-label="محمد أحمد"
+      >
+        B07
+      </a>
+
+      <button
+        class="menu-toggle"
+        id="menu-toggle"
+        type="button"
+        aria-label="فتح القائمة"
+        aria-expanded="false"
+        aria-controls="main-navigation"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav
+        class="main-nav"
+        id="main-navigation"
+        aria-label="التنقل الرئيسي"
+      >
+
+        <a href="index.html">الرئيسية</a>
+
+        <a href="projects.html">المشاريع</a>
+
+        <a href="about.html">عنّي</a>
+
+        <a href="contact.html">تواصل</a>
+
+      </nav>
+
+    </div>
+
+  </header>
+
+
+  <!-- MAIN -->
+
+  <main>
+
+    <section
+      class="project-details-section section"
+      aria-labelledby="project-title"
+    >
+
+      <div class="container">
+
+        <!-- LOADING -->
+
+        <div
+          id="project-loading"
+          class="loading-state"
+        >
+
+          <span
+            class="loading-spinner"
+            aria-hidden="true"
+          ></span>
+
+          <p>
+            جاري تحميل المشروع...
+          </p>
+
+        </div>
+
+
+        <!-- ERROR -->
+
+        <div
+          id="project-error"
+          class="loading-state"
+          hidden
+        >
+
+          <p>
+            تعذر تحميل المشروع.
+          </p>
+
+          <a
+            href="projects.html"
+            class="button button-primary"
+          >
+            العودة للمشاريع
+          </a>
+
+        </div>
+
+
+        <!-- PROJECT -->
+
+        <article
+          id="project-details"
+          class="project-details"
+          hidden
+        >
+
+          <div class="project-details-header">
+
+            <p
+              id="project-category"
+              class="eyebrow"
+            ></p>
+
+            <h1 id="project-title"></h1>
+
+            <p
+              id="project-description"
+              class="project-details-description"
+            ></p>
+
+          </div>
+
+
+          <!-- MEDIA -->
+
+          <div
+            id="project-media"
+            class="project-details-media"
+          ></div>
+
+
+          <!-- ACTIONS -->
+
+          <div
+            class="hero-actions project-details-actions"
+          >
+
+            <a
+              href="projects.html"
+              class="button button-secondary"
+            >
+              العودة للمشاريع
+            </a>
+
+            <a
+              id="project-link"
+              class="button button-primary"
+              target="_blank"
+              rel="noopener noreferrer"
+              hidden
+            >
+              مشاهدة المشروع
+            </a>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- FOOTER -->
+
+  <footer class="site-footer">
+
+    <div class="container footer-content">
+
+      <p>
+        ©
+        <span id="current-year"></span>
+        B07 Portfolio
+      </p>
+
+      <a href="index.html">
+        العودة للرئيسية
+      </a>
+
+    </div>
+
+  </footer>
+
+
+  <!-- JAVASCRIPT -->
+
+  <script>
+
+    "use strict";
+
+
+    /* CURRENT YEAR */
+
+    const yearElement =
+      document.getElementById(
+        "current-year"
+      );
+
+    if (yearElement) {
+
+      yearElement.textContent =
+        new Date().getFullYear();
+
+    }
+
+
+    /* MOBILE MENU */
+
+    const menuToggle =
+      document.getElementById(
+        "menu-toggle"
+      );
+
+    const mainNavigation =
+      document.getElementById(
+        "main-navigation"
+      );
+
+
+    if (
+      menuToggle &&
+      mainNavigation
+    ) {
+
+      menuToggle.addEventListener(
+        "click",
+        () => {
+
+          const isOpen =
+            menuToggle.getAttribute(
+              "aria-expanded"
+            ) === "true";
+
+
+          menuToggle.setAttribute(
+            "aria-expanded",
+            String(!isOpen)
+          );
+
+
+          mainNavigation.classList.toggle(
+            "is-open"
+          );
+
+        }
+      );
+
+
+      mainNavigation
+        .querySelectorAll("a")
+        .forEach((link) => {
+
+          link.addEventListener(
+            "click",
+            () => {
+
+              menuToggle.setAttribute(
+                "aria-expanded",
+                "false"
+              );
+
+              mainNavigation.classList.remove(
+                "is-open"
+              );
+
+            }
+          );
+
+        });
+
+    }
+
+  </script>
+
+
+  <!-- PROJECT DETAILS -->
+
+  <script src="project.js"></script>
+
+</body>
+
+  </html>
