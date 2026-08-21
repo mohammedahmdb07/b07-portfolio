@@ -26,8 +26,58 @@ const TUS_CHUNK_SIZE =
 
 
 /* =========================================
+   ELEMENTS
+========================================= */
+
+const form =
+  document.getElementById("project-form");
+
+const message =
+  document.getElementById("dashboard-message");
+
+const projectsContainer =
+  document.getElementById("admin-projects");
+
+const logoutButton =
+  document.getElementById("logout-button");
+
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+function setMessage(text) {
+
+  if (message) {
+    message.textContent = text || "";
+  }
+
+}
+
+
+/* =========================================
    SUPABASE
 ========================================= */
+
+if (
+  !window.supabase ||
+  typeof window.supabase.createClient !== "function"
+) {
+
+  console.error(
+    "Supabase library is not loaded."
+  );
+
+  setMessage(
+    "تعذر تحميل نظام قاعدة البيانات. أعد تحميل الصفحة."
+  );
+
+  throw new Error(
+    "Supabase library is not loaded."
+  );
+
+}
+
 
 const supabaseClient =
   window.supabase.createClient(
@@ -45,31 +95,6 @@ const supabaseClient =
 
 
 /* =========================================
-   ELEMENTS
-========================================= */
-
-const form =
-  document.getElementById(
-    "project-form"
-  );
-
-const message =
-  document.getElementById(
-    "dashboard-message"
-  );
-
-const projectsContainer =
-  document.getElementById(
-    "admin-projects"
-  );
-
-const logoutButton =
-  document.getElementById(
-    "logout-button"
-  );
-
-
-/* =========================================
    STATE
 ========================================= */
 
@@ -79,15 +104,6 @@ let editingProjectId = null;
 /* =========================================
    HELPERS
 ========================================= */
-
-function setMessage(text) {
-
-  if (message) {
-    message.textContent = text;
-  }
-
-}
-
 
 function escapeHtml(value) {
 
@@ -121,16 +137,12 @@ function parseMediaUrls(value) {
         ? parsed
         : [];
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
       console.error(
         "media_urls parse error:",
         error
       );
-
-      return [];
 
     }
 
@@ -165,15 +177,11 @@ async function getCurrentSession() {
   } =
     await supabaseClient.auth.getSession();
 
-
   if (error) {
     throw error;
   }
 
-
-  return data
-    ? data.session
-    : null;
+  return data?.session || null;
 
 }
 
@@ -182,19 +190,10 @@ async function requireAuth() {
 
   try {
 
-    const {
-      data,
-      error
-    } =
-      await supabaseClient.auth.getSession();
+    const session =
+      await getCurrentSession();
 
-
-    if (error) {
-
-      console.error(
-        "Auth session error:",
-        error
-      );
+    if (!session) {
 
       window.location.replace(
         "admin.html"
@@ -203,35 +202,18 @@ async function requireAuth() {
       return false;
 
     }
-
-
-    if (
-      !data ||
-      !data.session
-    ) {
-
-      console.warn(
-        "No active Supabase session."
-      );
-
-      window.location.replace(
-        "admin.html"
-      );
-
-      return false;
-
-    }
-
 
     return true;
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     console.error(
-      "Authentication check failed:",
+      "Authentication error:",
       error
+    );
+
+    setMessage(
+      "تعذر التحقق من تسجيل الدخول."
     );
 
     window.location.replace(
@@ -252,22 +234,20 @@ async function requireAuth() {
 function getMediaType(file) {
 
   if (
-    file.type.startsWith("image/")
+    file?.type?.startsWith("image/")
   ) {
 
     return "image";
 
   }
 
-
   if (
-    file.type.startsWith("video/")
+    file?.type?.startsWith("video/")
   ) {
 
     return "video";
 
   }
-
 
   return null;
 
@@ -277,8 +257,7 @@ function getMediaType(file) {
 function createStoragePath(file) {
 
   const originalName =
-    file.name || "file";
-
+    file?.name || "file";
 
   const extension =
     originalName.includes(".")
@@ -288,10 +267,10 @@ function createStoragePath(file) {
           .toLowerCase()
       : "bin";
 
+  const id =
+    crypto.randomUUID();
 
-  return (
-    `projects/${crypto.randomUUID()}.${extension}`
-  );
+  return `projects/${id}.${extension}`;
 
 }
 
@@ -321,7 +300,6 @@ async function uploadStandard(
         }
       );
 
-
   if (error) {
     throw error;
   }
@@ -339,12 +317,12 @@ async function uploadResumable(
 ) {
 
   if (
-    typeof window.tus ===
-    "undefined"
+    !window.tus ||
+    typeof window.tus.Upload !== "function"
   ) {
 
     throw new Error(
-      "مكتبة رفع الملفات الكبيرة غير متاحة."
+      "مكتبة رفع الملفات الكبيرة غير متاحة. أعد تحميل الصفحة."
     );
 
   }
@@ -352,7 +330,6 @@ async function uploadResumable(
 
   const session =
     await getCurrentSession();
-
 
   if (!session) {
 
@@ -365,7 +342,6 @@ async function uploadResumable(
 
   const projectId =
     "vzmrdfyxzjbrgbcgydb";
-
 
   const endpoint =
     `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`;
@@ -390,13 +366,11 @@ async function uploadResumable(
             ],
 
             headers: {
-
               authorization:
                 `Bearer ${session.access_token}`,
 
               apikey:
                 SUPABASE_PUBLISHABLE_KEY
-
             },
 
             uploadDataDuringCreation:
@@ -421,7 +395,6 @@ async function uploadResumable(
 
               cacheControl:
                 "3600"
-
             },
 
             onError(error) {
@@ -440,6 +413,10 @@ async function uploadResumable(
               bytesTotal
             ) {
 
+              if (!bytesTotal) {
+                return;
+              }
+
               const percent =
                 Math.round(
                   (
@@ -447,7 +424,6 @@ async function uploadResumable(
                     bytesTotal
                   ) * 100
                 );
-
 
               setMessage(
                 `جاري رفع الملف... ${percent}%`
@@ -471,6 +447,7 @@ async function uploadResumable(
           previousUploads => {
 
             if (
+              Array.isArray(previousUploads) &&
               previousUploads.length > 0
             ) {
 
@@ -479,7 +456,6 @@ async function uploadResumable(
               );
 
             }
-
 
             upload.start();
 
@@ -505,8 +481,7 @@ async function uploadMedia(file) {
 
 
   if (
-    file.size >
-    MAX_FILE_SIZE
+    file.size > MAX_FILE_SIZE
   ) {
 
     throw new Error(
@@ -518,7 +493,6 @@ async function uploadMedia(file) {
 
   const mediaType =
     getMediaType(file);
-
 
   if (!mediaType) {
 
@@ -538,69 +512,75 @@ async function uploadMedia(file) {
   );
 
 
-  if (
-    file.size <=
-    RESUMABLE_LIMIT
-  ) {
+  try {
 
-    await uploadStandard(
-      file,
-      path
-    );
+    if (
+      file.size <= RESUMABLE_LIMIT
+    ) {
+
+      await uploadStandard(
+        file,
+        path
+      );
+
+    } else {
+
+      await uploadResumable(
+        file,
+        path
+      );
+
+    }
+
+
+    const {
+      data
+    } =
+      supabaseClient
+        .storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(path);
+
+
+    if (
+      !data?.publicUrl
+    ) {
+
+      throw new Error(
+        "تعذر إنشاء رابط الملف."
+      );
+
+    }
+
+
+    return {
+
+      url:
+        data.publicUrl,
+
+      path,
+
+      type:
+        mediaType,
+
+      name:
+        file.name,
+
+      size:
+        file.size,
+
+      mime_type:
+        file.type
+
+    };
+
+  } catch (error) {
+
+    await deleteStorageFile(path);
+
+    throw error;
 
   }
-
-  else {
-
-    await uploadResumable(
-      file,
-      path
-    );
-
-  }
-
-
-  const {
-    data
-  } =
-    supabaseClient
-      .storage
-      .from(BUCKET_NAME)
-      .getPublicUrl(path);
-
-
-  if (
-    !data ||
-    !data.publicUrl
-  ) {
-
-    throw new Error(
-      "تعذر إنشاء رابط الملف."
-    );
-
-  }
-
-
-  return {
-
-    url:
-      data.publicUrl,
-
-    path,
-
-    type:
-      mediaType,
-
-    name:
-      file.name,
-
-    size:
-      file.size,
-
-    mime_type:
-      file.type
-
-  };
 
 }
 
@@ -615,20 +595,29 @@ async function deleteStorageFile(path) {
     return;
   }
 
+  try {
 
-  const {
-    error
-  } =
-    await supabaseClient
-      .storage
-      .from(BUCKET_NAME)
-      .remove([path]);
+    const {
+      error
+    } =
+      await supabaseClient
+        .storage
+        .from(BUCKET_NAME)
+        .remove([path]);
 
+    if (error) {
 
-  if (error) {
+      console.error(
+        "Storage cleanup error:",
+        error
+      );
+
+    }
+
+  } catch (error) {
 
     console.error(
-      "Storage cleanup error:",
+      "Storage cleanup exception:",
       error
     );
 
@@ -643,6 +632,11 @@ async function deleteStorageFile(path) {
 
 async function deleteProjectMedia(project) {
 
+  if (!project) {
+    return;
+  }
+
+
   const media =
     parseMediaUrls(
       project.media_urls
@@ -652,20 +646,13 @@ async function deleteProjectMedia(project) {
   const paths =
     media
       .map(item =>
-        item &&
-        item.path
-          ? item.path
-          : null
+        item?.path || null
       )
       .filter(Boolean);
 
 
-  if (
-    paths.length === 0
-  ) {
-
+  if (!paths.length) {
     return;
-
   }
 
 
@@ -712,26 +699,19 @@ function resetProjectForm() {
 
 
   if (publishCheckbox) {
-
-    publishCheckbox.checked =
-      true;
-
+    publishCheckbox.checked = true;
   }
 
 
   const submitButton =
-    form
-      ? form.querySelector(
-          'button[type="submit"]'
-        )
-      : null;
+    form?.querySelector(
+      'button[type="submit"]'
+    );
 
 
   if (submitButton) {
-
     submitButton.textContent =
       "إضافة المشروع";
-
   }
 
 
@@ -756,6 +736,11 @@ function resetProjectForm() {
 ========================================= */
 
 function startEditing(project) {
+
+  if (!project) {
+    return;
+  }
+
 
   editingProjectId =
     project.id;
@@ -820,28 +805,20 @@ function startEditing(project) {
 
 
   if (publishCheckbox) {
-
     publishCheckbox.checked =
-      Boolean(
-        project.is_published
-      );
-
+      Boolean(project.is_published);
   }
 
 
   const submitButton =
-    form
-      ? form.querySelector(
-          'button[type="submit"]'
-        )
-      : null;
+    form?.querySelector(
+      'button[type="submit"]'
+    );
 
 
   if (submitButton) {
-
     submitButton.textContent =
       "حفظ التعديلات";
-
   }
 
 
@@ -857,7 +834,6 @@ function startEditing(project) {
         "button"
       );
 
-
     cancelButton.type =
       "button";
 
@@ -870,23 +846,20 @@ function startEditing(project) {
     cancelButton.textContent =
       "إلغاء التعديل";
 
-
     cancelButton.addEventListener(
       "click",
       resetProjectForm
     );
 
 
-    if (submitButton) {
+    if (submitButton?.parentNode) {
 
       submitButton.parentNode.insertBefore(
         cancelButton,
         submitButton.nextSibling
       );
 
-    }
-
-    else {
+    } else {
 
       form.appendChild(
         cancelButton
@@ -911,82 +884,6 @@ function startEditing(project) {
 
 
 /* =========================================
-   LOAD PROJECTS
-========================================= */
-
-async function loadProjects() {
-
-  if (!projectsContainer) {
-    return;
-  }
-
-
-  projectsContainer.innerHTML =
-    "<p>جاري تحميل المشاريع...</p>";
-
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient
-      .from("projects")
-      .select("*")
-      .order(
-        "sort_order",
-        {
-          ascending: true
-        }
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      );
-
-
-  if (error) {
-
-    console.error(
-      "Load projects error:",
-      error
-    );
-
-
-    projectsContainer.innerHTML =
-      "<p>تعذر تحميل المشاريع.</p>";
-
-    return;
-
-  }
-
-
-  if (
-    !data ||
-    data.length === 0
-  ) {
-
-    projectsContainer.innerHTML =
-      "<p>لا توجد مشاريع حاليًا.</p>";
-
-    return;
-
-  }
-
-
-  projectsContainer.innerHTML =
-    data
-      .map(renderAdminProject)
-      .join("");
-
-
-  setupProjectActions();
-
-}
-
-
-/* =========================================
    RENDER PROJECT
 ========================================= */
 
@@ -1003,22 +900,21 @@ function renderAdminProject(project) {
       .map(item => {
 
         if (
-          !item ||
-          !item.url
+          !item?.url
         ) {
-
           return "";
-
         }
 
 
-        if (
+        const isVideo =
           item.type === "video" ||
           (
             typeof item.mime_type === "string" &&
             item.mime_type.startsWith("video/")
-          )
-        ) {
+          );
+
+
+        if (isVideo) {
 
           return `
             <video
@@ -1056,9 +952,7 @@ function renderAdminProject(project) {
         project.cover_image
           ? `
             <img
-              src="${escapeHtml(
-                project.cover_image
-              )}"
+              src="${escapeHtml(project.cover_image)}"
               alt="${escapeHtml(
                 project.title || "B07 Project"
               )}"
@@ -1088,20 +982,17 @@ function renderAdminProject(project) {
           )}
         </p>
 
-
         <h3>
           ${escapeHtml(
             project.title || "بدون عنوان"
           )}
         </h3>
 
-
         <p>
           ${escapeHtml(
             project.description || ""
           )}
         </p>
-
 
         <p>
           الحالة:
@@ -1112,7 +1003,6 @@ function renderAdminProject(project) {
           }
         </p>
 
-
         <div class="admin-project-actions">
 
           <button
@@ -1122,7 +1012,6 @@ function renderAdminProject(project) {
           >
             تعديل
           </button>
-
 
           <button
             type="button"
@@ -1141,7 +1030,6 @@ function renderAdminProject(project) {
             }
           </button>
 
-
           <button
             type="button"
             class="button button-secondary delete-project"
@@ -1156,6 +1044,92 @@ function renderAdminProject(project) {
 
     </article>
   `;
+
+}
+
+
+/* =========================================
+   LOAD PROJECTS
+========================================= */
+
+async function loadProjects() {
+
+  if (!projectsContainer) {
+    return;
+  }
+
+
+  projectsContainer.innerHTML =
+    "<p>جاري تحميل المشاريع...</p>";
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient
+        .from("projects")
+        .select("*")
+        .order(
+          "sort_order",
+          {
+            ascending: true
+          }
+        )
+        .order(
+          "created_at",
+          {
+            ascending: false
+          }
+        );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    if (
+      !Array.isArray(data) ||
+      data.length === 0
+    ) {
+
+      projectsContainer.innerHTML =
+        "<p>لا توجد مشاريع حاليًا.</p>";
+
+      return;
+
+    }
+
+
+    projectsContainer.innerHTML =
+      data
+        .map(renderAdminProject)
+        .join("");
+
+
+    setupProjectActions();
+
+  } catch (error) {
+
+    console.error(
+      "Load projects error:",
+      error
+    );
+
+
+    projectsContainer.innerHTML =
+      "<p>تعذر تحميل المشاريع.</p>";
+
+
+    setMessage(
+      error.message ||
+      "تعذر تحميل المشاريع."
+    );
+
+  }
 
 }
 
@@ -1185,31 +1159,43 @@ function setupProjectActions() {
             button.dataset.id;
 
 
-          const {
-            data,
-            error
-          } =
-            await supabaseClient
-              .from("projects")
-              .select("*")
-              .eq("id", id)
-              .single();
+          if (!id) {
+            return;
+          }
 
 
-          if (error) {
+          try {
 
-            console.error(error);
+            const {
+              data,
+              error
+            } =
+              await supabaseClient
+                .from("projects")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+
+            if (error) {
+              throw error;
+            }
+
+
+            startEditing(data);
+
+          } catch (error) {
+
+            console.error(
+              "Edit project error:",
+              error
+            );
 
             setMessage(
               "تعذر تحميل المشروع للتعديل."
             );
 
-            return;
-
           }
-
-
-          startEditing(data);
 
         }
       );
@@ -1230,14 +1216,11 @@ function setupProjectActions() {
           const id =
             button.dataset.id;
 
-
           const currentlyPublished =
-            button.dataset.published ===
-            "true";
+            button.dataset.published === "true";
 
 
-          button.disabled =
-            true;
+          button.disabled = true;
 
 
           try {
@@ -1271,11 +1254,12 @@ function setupProjectActions() {
 
             await loadProjects();
 
-          }
+          } catch (error) {
 
-          catch (error) {
-
-            console.error(error);
+            console.error(
+              "Toggle project error:",
+              error
+            );
 
             setMessage(
               error.message ||
@@ -1383,11 +1367,12 @@ function setupProjectActions() {
 
             await loadProjects();
 
-          }
+          } catch (error) {
 
-          catch (error) {
-
-            console.error(error);
+            console.error(
+              "Delete project error:",
+              error
+            );
 
             setMessage(
               error.message ||
@@ -1440,9 +1425,7 @@ if (form) {
 
 
         const selectedFile =
-          fileInput &&
-          fileInput.files &&
-          fileInput.files.length > 0
+          fileInput?.files?.length
             ? fileInput.files[0]
             : null;
 
@@ -1516,10 +1499,7 @@ if (form) {
 
           if (error) {
 
-            if (
-              uploadedFile &&
-              uploadedFile.path
-            ) {
+            if (uploadedFile?.path) {
 
               await deleteStorageFile(
                 uploadedFile.path
@@ -1591,10 +1571,7 @@ if (form) {
 
           if (error) {
 
-            if (
-              uploadedFile &&
-              uploadedFile.path
-            ) {
+            if (uploadedFile?.path) {
 
               await deleteStorageFile(
                 uploadedFile.path
@@ -1630,11 +1607,13 @@ if (form) {
 
         await loadProjects();
 
-      }
+      } catch (error) {
 
-      catch (error) {
+        console.error(
+          "Project submit error:",
+          error
+        );
 
-        console.error(error);
 
         setMessage(
           error.message ||
@@ -1659,7 +1638,21 @@ if (logoutButton) {
     "click",
     async () => {
 
-      await supabaseClient.auth.signOut();
+      try {
+
+        await supabaseClient
+          .auth
+          .signOut();
+
+      } catch (error) {
+
+        console.error(
+          "Logout error:",
+          error
+        );
+
+      }
+
 
       window.location.replace(
         "admin.html"
@@ -1677,16 +1670,38 @@ if (logoutButton) {
 
 async function startDashboard() {
 
-  const authenticated =
-    await requireAuth();
+  try {
+
+    setMessage(
+      "جاري التحقق من تسجيل الدخول..."
+    );
 
 
-  if (!authenticated) {
-    return;
+    const authenticated =
+      await requireAuth();
+
+
+    if (!authenticated) {
+      return;
+    }
+
+
+    await loadProjects();
+
+  } catch (error) {
+
+    console.error(
+      "Dashboard startup error:",
+      error
+    );
+
+
+    setMessage(
+      error.message ||
+      "حدث خطأ في تحميل لوحة التحكم."
+    );
+
   }
-
-
-  await loadProjects();
 
 }
 
