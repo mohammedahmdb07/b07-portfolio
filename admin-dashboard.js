@@ -3,11 +3,10 @@
 /* =========================================
    B07 PORTFOLIO
    Admin Dashboard
-   Add / Edit / Delete / Publish Projects
 ========================================= */
 
 const SUPABASE_URL =
-  "https://vzmrdfyxzjbrgbcgydb.supabase.co";
+  "https://vzmrdfyxzjbrgbcgydbb.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_lMrhyGww4C8LZW9Db4_Puw_35HXrOJC";
@@ -64,12 +63,8 @@ if (
   typeof window.supabase.createClient !== "function"
 ) {
 
-  console.error(
-    "Supabase library is not loaded."
-  );
-
   setMessage(
-    "تعذر تحميل نظام قاعدة البيانات. أعد تحميل الصفحة."
+    "تعذر تحميل Supabase. أعد تحميل الصفحة."
   );
 
   throw new Error(
@@ -88,7 +83,7 @@ const supabaseClient =
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        storage: window.localStorage
+        storageKey: "b07-supabase-auth"
       }
     }
   );
@@ -125,7 +120,7 @@ function parseMediaUrls(value) {
 
   if (
     typeof value === "string" &&
-    value.trim() !== ""
+    value.trim()
   ) {
 
     try {
@@ -169,38 +164,27 @@ function getElementValue(id) {
    AUTH
 ========================================= */
 
-async function getCurrentSession() {
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.auth.getSession();
-
-  if (error) {
-    throw error;
-  }
-
-  return data?.session || null;
-
-}
-
-
 async function requireAuth() {
 
   try {
 
-    const session =
-      await getCurrentSession();
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.getSession();
 
-    if (!session) {
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.session) {
 
       window.location.replace(
         "admin.html"
       );
 
       return false;
-
     }
 
     return true;
@@ -213,15 +197,10 @@ async function requireAuth() {
     );
 
     setMessage(
-      "تعذر التحقق من تسجيل الدخول."
-    );
-
-    window.location.replace(
-      "admin.html"
+      "تعذر التحقق من جلسة تسجيل الدخول."
     );
 
     return false;
-
   }
 
 }
@@ -236,17 +215,13 @@ function getMediaType(file) {
   if (
     file?.type?.startsWith("image/")
   ) {
-
     return "image";
-
   }
 
   if (
     file?.type?.startsWith("video/")
   ) {
-
     return "video";
-
   }
 
   return null;
@@ -322,16 +297,22 @@ async function uploadResumable(
   ) {
 
     throw new Error(
-      "مكتبة رفع الملفات الكبيرة غير متاحة. أعد تحميل الصفحة."
+      "مكتبة رفع الملفات الكبيرة غير متاحة."
     );
 
   }
 
 
-  const session =
-    await getCurrentSession();
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.auth.getSession();
 
-  if (!session) {
+  if (
+    error ||
+    !data?.session
+  ) {
 
     throw new Error(
       "انتهت جلسة تسجيل الدخول."
@@ -341,7 +322,7 @@ async function uploadResumable(
 
 
   const projectId =
-    "vzmrdfyxzjbrgbcgydb";
+    "vzmrdfyxzjbrgbcgydbb";
 
   const endpoint =
     `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`;
@@ -366,11 +347,13 @@ async function uploadResumable(
             ],
 
             headers: {
+
               authorization:
-                `Bearer ${session.access_token}`,
+                `Bearer ${data.session.access_token}`,
 
               apikey:
                 SUPABASE_PUBLISHABLE_KEY
+
             },
 
             uploadDataDuringCreation:
@@ -395,6 +378,7 @@ async function uploadResumable(
 
               cacheControl:
                 "3600"
+
             },
 
             onError(error) {
@@ -432,9 +416,7 @@ async function uploadResumable(
             },
 
             onSuccess() {
-
               resolve();
-
             }
 
           }
@@ -443,24 +425,22 @@ async function uploadResumable(
 
       upload
         .findPreviousUploads()
-        .then(
-          previousUploads => {
+        .then(previousUploads => {
 
-            if (
-              Array.isArray(previousUploads) &&
-              previousUploads.length > 0
-            ) {
+          if (
+            Array.isArray(previousUploads) &&
+            previousUploads.length
+          ) {
 
-              upload.resumeFromPreviousUpload(
-                previousUploads[0]
-              );
-
-            }
-
-            upload.start();
+            upload.resumeFromPreviousUpload(
+              previousUploads[0]
+            );
 
           }
-        )
+
+          upload.start();
+
+        })
         .catch(reject);
 
     }
@@ -542,9 +522,7 @@ async function uploadMedia(file) {
         .getPublicUrl(path);
 
 
-    if (
-      !data?.publicUrl
-    ) {
+    if (!data?.publicUrl) {
 
       throw new Error(
         "تعذر إنشاء رابط الملف."
@@ -632,24 +610,15 @@ async function deleteStorageFile(path) {
 
 async function deleteProjectMedia(project) {
 
-  if (!project) {
-    return;
-  }
-
-
   const media =
     parseMediaUrls(
-      project.media_urls
+      project?.media_urls
     );
-
 
   const paths =
     media
-      .map(item =>
-        item?.path || null
-      )
+      .map(item => item?.path)
       .filter(Boolean);
-
 
   if (!paths.length) {
     return;
@@ -697,9 +666,18 @@ function resetProjectForm() {
       "is-published"
     );
 
-
   if (publishCheckbox) {
     publishCheckbox.checked = true;
+  }
+
+
+  const sortOrder =
+    document.getElementById(
+      "sort-order"
+    );
+
+  if (sortOrder) {
+    sortOrder.value = "0";
   }
 
 
@@ -707,7 +685,6 @@ function resetProjectForm() {
     form?.querySelector(
       'button[type="submit"]'
     );
-
 
   if (submitButton) {
     submitButton.textContent =
@@ -719,7 +696,6 @@ function resetProjectForm() {
     document.getElementById(
       "cancel-edit"
     );
-
 
   if (cancelButton) {
     cancelButton.remove();
@@ -746,67 +722,54 @@ function startEditing(project) {
     project.id;
 
 
-  const titleInput =
-    document.getElementById("title");
+  const fields = {
 
-  const categoryInput =
-    document.getElementById("category");
+    title:
+      project.title || "",
 
-  const descriptionInput =
-    document.getElementById("description");
+    category:
+      project.category || "",
 
-  const projectUrlInput =
-    document.getElementById("project-url");
+    description:
+      project.description || "",
 
-  const coverImageInput =
-    document.getElementById("cover-image");
+    "project-url":
+      project.project_url || "",
 
-  const sortOrderInput =
-    document.getElementById("sort-order");
+    "cover-image":
+      project.cover_image || "",
+
+    "sort-order":
+      project.sort_order ?? 0
+
+  };
+
+
+  Object.entries(fields)
+    .forEach(([id, value]) => {
+
+      const element =
+        document.getElementById(id);
+
+      if (element) {
+        element.value = value;
+      }
+
+    });
+
 
   const publishCheckbox =
-    document.getElementById("is-published");
-
-
-  if (titleInput) {
-    titleInput.value =
-      project.title || "";
-  }
-
-
-  if (categoryInput) {
-    categoryInput.value =
-      project.category || "";
-  }
-
-
-  if (descriptionInput) {
-    descriptionInput.value =
-      project.description || "";
-  }
-
-
-  if (projectUrlInput) {
-    projectUrlInput.value =
-      project.project_url || "";
-  }
-
-
-  if (coverImageInput) {
-    coverImageInput.value =
-      project.cover_image || "";
-  }
-
-
-  if (sortOrderInput) {
-    sortOrderInput.value =
-      project.sort_order ?? 0;
-  }
-
+    document.getElementById(
+      "is-published"
+    );
 
   if (publishCheckbox) {
+
     publishCheckbox.checked =
-      Boolean(project.is_published);
+      Boolean(
+        project.is_published
+      );
+
   }
 
 
@@ -817,8 +780,10 @@ function startEditing(project) {
 
 
   if (submitButton) {
+
     submitButton.textContent =
       "حفظ التعديلات";
+
   }
 
 
@@ -846,26 +811,18 @@ function startEditing(project) {
     cancelButton.textContent =
       "إلغاء التعديل";
 
+
     cancelButton.addEventListener(
       "click",
       resetProjectForm
     );
 
 
-    if (submitButton?.parentNode) {
-
-      submitButton.parentNode.insertBefore(
+    submitButton?.parentNode
+      ?.insertBefore(
         cancelButton,
         submitButton.nextSibling
       );
-
-    } else {
-
-      form.appendChild(
-        cancelButton
-      );
-
-    }
 
   }
 
@@ -899,9 +856,7 @@ function renderAdminProject(project) {
     media
       .map(item => {
 
-        if (
-          !item?.url
-        ) {
+        if (!item?.url) {
           return "";
         }
 
@@ -962,7 +917,6 @@ function renderAdminProject(project) {
           : ""
       }
 
-
       ${
         mediaHtml
           ? `
@@ -972,7 +926,6 @@ function renderAdminProject(project) {
           `
           : ""
       }
-
 
       <div class="project-content">
 
@@ -1100,7 +1053,6 @@ async function loadProjects() {
         "<p>لا توجد مشاريع حاليًا.</p>";
 
       return;
-
     }
 
 
@@ -1125,7 +1077,7 @@ async function loadProjects() {
 
 
     setMessage(
-      error.message ||
+      error?.message ||
       "تعذر تحميل المشاريع."
     );
 
@@ -1145,8 +1097,6 @@ function setupProjectActions() {
   }
 
 
-  /* EDIT */
-
   projectsContainer
     .querySelectorAll(".edit-project")
     .forEach(button => {
@@ -1154,15 +1104,6 @@ function setupProjectActions() {
       button.addEventListener(
         "click",
         async () => {
-
-          const id =
-            button.dataset.id;
-
-
-          if (!id) {
-            return;
-          }
-
 
           try {
 
@@ -1173,7 +1114,10 @@ function setupProjectActions() {
               await supabaseClient
                 .from("projects")
                 .select("*")
-                .eq("id", id)
+                .eq(
+                  "id",
+                  button.dataset.id
+                )
                 .single();
 
 
@@ -1192,6 +1136,7 @@ function setupProjectActions() {
             );
 
             setMessage(
+              error?.message ||
               "تعذر تحميل المشروع للتعديل."
             );
 
@@ -1202,8 +1147,6 @@ function setupProjectActions() {
 
     });
 
-
-  /* TOGGLE */
 
   projectsContainer
     .querySelectorAll(".toggle-project")
@@ -1216,11 +1159,13 @@ function setupProjectActions() {
           const id =
             button.dataset.id;
 
-          const currentlyPublished =
-            button.dataset.published === "true";
+          const published =
+            button.dataset.published ===
+            "true";
 
 
-          button.disabled = true;
+          button.disabled =
+            true;
 
 
           try {
@@ -1232,7 +1177,7 @@ function setupProjectActions() {
                 .from("projects")
                 .update({
                   is_published:
-                    !currentlyPublished
+                    !published
                 })
                 .eq(
                   "id",
@@ -1246,7 +1191,7 @@ function setupProjectActions() {
 
 
             setMessage(
-              currentlyPublished
+              published
                 ? "تم إخفاء المشروع."
                 : "تم نشر المشروع."
             );
@@ -1262,7 +1207,7 @@ function setupProjectActions() {
             );
 
             setMessage(
-              error.message ||
+              error?.message ||
               "تعذر تغيير حالة المشروع."
             );
 
@@ -1277,8 +1222,6 @@ function setupProjectActions() {
     });
 
 
-  /* DELETE */
-
   projectsContainer
     .querySelectorAll(".delete-project")
     .forEach(button => {
@@ -1286,10 +1229,6 @@ function setupProjectActions() {
       button.addEventListener(
         "click",
         async () => {
-
-          const id =
-            button.dataset.id;
-
 
           const confirmed =
             window.confirm(
@@ -1315,7 +1254,10 @@ function setupProjectActions() {
               await supabaseClient
                 .from("projects")
                 .select("*")
-                .eq("id", id)
+                .eq(
+                  "id",
+                  button.dataset.id
+                )
                 .single();
 
 
@@ -1342,7 +1284,7 @@ function setupProjectActions() {
                 .delete()
                 .eq(
                   "id",
-                  id
+                  button.dataset.id
                 );
 
 
@@ -1352,7 +1294,8 @@ function setupProjectActions() {
 
 
             if (
-              editingProjectId === id
+              editingProjectId ===
+              button.dataset.id
             ) {
 
               resetProjectForm();
@@ -1375,7 +1318,7 @@ function setupProjectActions() {
             );
 
             setMessage(
-              error.message ||
+              error?.message ||
               "تعذر حذف المشروع."
             );
 
@@ -1425,9 +1368,8 @@ if (form) {
 
 
         const selectedFile =
-          fileInput?.files?.length
-            ? fileInput.files[0]
-            : null;
+          fileInput?.files?.[0] ||
+          null;
 
 
         if (selectedFile) {
@@ -1443,25 +1385,35 @@ if (form) {
         const projectData = {
 
           title:
-            getElementValue("title"),
+            getElementValue(
+              "title"
+            ),
 
           category:
-            getElementValue("category"),
+            getElementValue(
+              "category"
+            ),
 
           description:
-            getElementValue("description"),
+            getElementValue(
+              "description"
+            ),
 
           project_url:
-            getElementValue("project-url") ||
-            null,
+            getElementValue(
+              "project-url"
+            ) || null,
 
           cover_image:
-            getElementValue("cover-image") ||
-            null,
+            getElementValue(
+              "cover-image"
+            ) || null,
 
           sort_order:
             Number(
-              getElementValue("sort-order")
+              getElementValue(
+                "sort-order"
+              )
             ) || 0,
 
           is_published:
@@ -1508,7 +1460,6 @@ if (form) {
             }
 
             throw error;
-
           }
 
 
@@ -1580,7 +1531,6 @@ if (form) {
             }
 
             throw error;
-
           }
 
 
@@ -1616,7 +1566,7 @@ if (form) {
 
 
         setMessage(
-          error.message ||
+          error?.message ||
           "حدث خطأ أثناء العملية."
         );
 
@@ -1670,44 +1620,23 @@ if (logoutButton) {
 
 async function startDashboard() {
 
-  try {
-
-    setMessage(
-      "جاري التحقق من تسجيل الدخول..."
-    );
+  setMessage(
+    "جاري تحميل لوحة التحكم..."
+  );
 
 
-    const authenticated =
-      await requireAuth();
+  const authenticated =
+    await requireAuth();
 
 
-    if (!authenticated) {
-      return;
-    }
-
-
-    await loadProjects();
-
-  } catch (error) {
-
-    console.error(
-      "Dashboard startup error:",
-      error
-    );
-
-
-    setMessage(
-      error.message ||
-      "حدث خطأ في تحميل لوحة التحكم."
-    );
-
+  if (!authenticated) {
+    return;
   }
+
+
+  await loadProjects();
 
 }
 
-
-/* =========================================
-   START
-========================================= */
 
 startDashboard();
