@@ -12,7 +12,8 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_lMrhyGww4C8LZW9Db4_Puw_35HXrOJC";
 
-const BUCKET_NAME = "portfolio-media";
+const BUCKET_NAME =
+  "portfolio-media";
 
 const MAX_FILE_SIZE =
   50 * 1024 * 1024;
@@ -31,7 +32,15 @@ const TUS_CHUNK_SIZE =
 const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage
+      }
+    }
   );
 
 
@@ -98,7 +107,6 @@ function parseMediaUrls(value) {
     return value;
   }
 
-
   if (
     typeof value === "string" &&
     value.trim() !== ""
@@ -113,7 +121,9 @@ function parseMediaUrls(value) {
         ? parsed
         : [];
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error(
         "media_urls parse error:",
@@ -121,9 +131,10 @@ function parseMediaUrls(value) {
       );
 
       return [];
-    }
-  }
 
+    }
+
+  }
 
   return [];
 
@@ -154,28 +165,83 @@ async function getCurrentSession() {
   } =
     await supabaseClient.auth.getSession();
 
+
   if (error) {
     throw error;
   }
 
-  return data.session;
+
+  return data
+    ? data.session
+    : null;
+
 }
 
 
 async function requireAuth() {
 
-  const session =
-    await getCurrentSession();
+  try {
 
-  if (!session) {
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.getSession();
 
-    window.location.href =
-      "admin.html";
 
-    return false;
+    if (error) {
+
+      console.error(
+        "Auth session error:",
+        error
+      );
+
+      window.location.replace(
+        "admin.html"
+      );
+
+      return false;
+
+    }
+
+
+    if (
+      !data ||
+      !data.session
+    ) {
+
+      console.warn(
+        "No active Supabase session."
+      );
+
+      window.location.replace(
+        "admin.html"
+      );
+
+      return false;
+
+    }
+
+
+    return true;
+
   }
 
-  return true;
+  catch (error) {
+
+    console.error(
+      "Authentication check failed:",
+      error
+    );
+
+    window.location.replace(
+      "admin.html"
+    );
+
+    return false;
+
+  }
+
 }
 
 
@@ -186,26 +252,25 @@ async function requireAuth() {
 function getMediaType(file) {
 
   if (
-    file.type.startsWith(
-      "image/"
-    )
+    file.type.startsWith("image/")
   ) {
 
     return "image";
+
   }
 
 
   if (
-    file.type.startsWith(
-      "video/"
-    )
+    file.type.startsWith("video/")
   ) {
 
     return "video";
+
   }
 
 
   return null;
+
 }
 
 
@@ -406,8 +471,7 @@ async function uploadResumable(
           previousUploads => {
 
             if (
-              previousUploads.length >
-              0
+              previousUploads.length > 0
             ) {
 
               upload.resumeFromPreviousUpload(
@@ -415,6 +479,7 @@ async function uploadResumable(
               );
 
             }
+
 
             upload.start();
 
@@ -483,7 +548,9 @@ async function uploadMedia(file) {
       path
     );
 
-  } else {
+  }
+
+  else {
 
     await uploadResumable(
       file,
@@ -542,9 +609,7 @@ async function uploadMedia(file) {
    DELETE STORAGE FILE
 ========================================= */
 
-async function deleteStorageFile(
-  path
-) {
+async function deleteStorageFile(path) {
 
   if (!path) {
     return;
@@ -576,9 +641,7 @@ async function deleteStorageFile(
    DELETE PROJECT MEDIA
 ========================================= */
 
-async function deleteProjectMedia(
-  project
-) {
+async function deleteProjectMedia(project) {
 
   const media =
     parseMediaUrls(
@@ -602,6 +665,7 @@ async function deleteProjectMedia(
   ) {
 
     return;
+
   }
 
 
@@ -678,9 +742,7 @@ function resetProjectForm() {
 
 
   if (cancelButton) {
-
     cancelButton.remove();
-
   }
 
 
@@ -690,7 +752,7 @@ function resetProjectForm() {
 
 
 /* =========================================
-   FILL FORM FOR EDIT
+   EDIT PROJECT
 ========================================= */
 
 function startEditing(project) {
@@ -700,86 +762,60 @@ function startEditing(project) {
 
 
   const titleInput =
-    document.getElementById(
-      "title"
-    );
+    document.getElementById("title");
 
   const categoryInput =
-    document.getElementById(
-      "category"
-    );
+    document.getElementById("category");
 
   const descriptionInput =
-    document.getElementById(
-      "description"
-    );
+    document.getElementById("description");
 
   const projectUrlInput =
-    document.getElementById(
-      "project-url"
-    );
+    document.getElementById("project-url");
 
   const coverImageInput =
-    document.getElementById(
-      "cover-image"
-    );
+    document.getElementById("cover-image");
 
   const sortOrderInput =
-    document.getElementById(
-      "sort-order"
-    );
+    document.getElementById("sort-order");
 
   const publishCheckbox =
-    document.getElementById(
-      "is-published"
-    );
+    document.getElementById("is-published");
 
 
   if (titleInput) {
-
     titleInput.value =
       project.title || "";
-
   }
 
 
   if (categoryInput) {
-
     categoryInput.value =
       project.category || "";
-
   }
 
 
   if (descriptionInput) {
-
     descriptionInput.value =
       project.description || "";
-
   }
 
 
   if (projectUrlInput) {
-
     projectUrlInput.value =
       project.project_url || "";
-
   }
 
 
   if (coverImageInput) {
-
     coverImageInput.value =
       project.cover_image || "";
-
   }
 
 
   if (sortOrderInput) {
-
     sortOrderInput.value =
       project.sort_order ?? 0;
-
   }
 
 
@@ -825,14 +861,11 @@ function startEditing(project) {
     cancelButton.type =
       "button";
 
-
     cancelButton.id =
       "cancel-edit";
 
-
     cancelButton.className =
       "button button-secondary";
-
 
     cancelButton.textContent =
       "إلغاء التعديل";
@@ -851,7 +884,9 @@ function startEditing(project) {
         submitButton.nextSibling
       );
 
-    } else {
+    }
+
+    else {
 
       form.appendChild(
         cancelButton
@@ -913,12 +948,17 @@ async function loadProjects() {
 
   if (error) {
 
-    console.error(error);
+    console.error(
+      "Load projects error:",
+      error
+    );
+
 
     projectsContainer.innerHTML =
       "<p>تعذر تحميل المشاريع.</p>";
 
     return;
+
   }
 
 
@@ -931,6 +971,7 @@ async function loadProjects() {
       "<p>لا توجد مشاريع حاليًا.</p>";
 
     return;
+
   }
 
 
@@ -946,12 +987,10 @@ async function loadProjects() {
 
 
 /* =========================================
-   RENDER ADMIN PROJECT
+   RENDER PROJECT
 ========================================= */
 
-function renderAdminProject(
-  project
-) {
+function renderAdminProject(project) {
 
   const media =
     parseMediaUrls(
@@ -974,16 +1013,19 @@ function renderAdminProject(
 
 
         if (
-          item.type === "video"
+          item.type === "video" ||
+          (
+            typeof item.mime_type === "string" &&
+            item.mime_type.startsWith("video/")
+          )
         ) {
 
           return `
             <video
-              src="${escapeHtml(
-                item.url
-              )}"
+              src="${escapeHtml(item.url)}"
               controls
               preload="metadata"
+              playsinline
             ></video>
           `;
 
@@ -992,11 +1034,9 @@ function renderAdminProject(
 
         return `
           <img
-            src="${escapeHtml(
-              item.url
-            )}"
+            src="${escapeHtml(item.url)}"
             alt="${escapeHtml(
-              project.title
+              project.title || "B07 Project"
             )}"
             loading="lazy"
           >
@@ -1009,9 +1049,7 @@ function renderAdminProject(
   return `
     <article
       class="project-card admin-project-card"
-      data-project-id="${escapeHtml(
-        project.id
-      )}"
+      data-project-id="${escapeHtml(project.id)}"
     >
 
       ${
@@ -1022,7 +1060,7 @@ function renderAdminProject(
                 project.cover_image
               )}"
               alt="${escapeHtml(
-                project.title
+                project.title || "B07 Project"
               )}"
               loading="lazy"
             >
@@ -1046,24 +1084,21 @@ function renderAdminProject(
 
         <p class="eyebrow">
           ${escapeHtml(
-            project.category ||
-            "PROJECT"
+            project.category || "PROJECT"
           )}
         </p>
 
 
         <h3>
           ${escapeHtml(
-            project.title ||
-            "بدون عنوان"
+            project.title || "بدون عنوان"
           )}
         </h3>
 
 
         <p>
           ${escapeHtml(
-            project.description ||
-            ""
+            project.description || ""
           )}
         </p>
 
@@ -1078,16 +1113,12 @@ function renderAdminProject(
         </p>
 
 
-        <div
-          class="admin-project-actions"
-        >
+        <div class="admin-project-actions">
 
           <button
             type="button"
             class="button button-secondary edit-project"
-            data-id="${escapeHtml(
-              project.id
-            )}"
+            data-id="${escapeHtml(project.id)}"
           >
             تعديل
           </button>
@@ -1096,9 +1127,7 @@ function renderAdminProject(
           <button
             type="button"
             class="button button-secondary toggle-project"
-            data-id="${escapeHtml(
-              project.id
-            )}"
+            data-id="${escapeHtml(project.id)}"
             data-published="${
               project.is_published
                 ? "true"
@@ -1116,9 +1145,7 @@ function renderAdminProject(
           <button
             type="button"
             class="button button-secondary delete-project"
-            data-id="${escapeHtml(
-              project.id
-            )}"
+            data-id="${escapeHtml(project.id)}"
           >
             حذف
           </button>
@@ -1147,9 +1174,7 @@ function setupProjectActions() {
   /* EDIT */
 
   projectsContainer
-    .querySelectorAll(
-      ".edit-project"
-    )
+    .querySelectorAll(".edit-project")
     .forEach(button => {
 
       button.addEventListener(
@@ -1180,6 +1205,7 @@ function setupProjectActions() {
             );
 
             return;
+
           }
 
 
@@ -1191,12 +1217,10 @@ function setupProjectActions() {
     });
 
 
-  /* TOGGLE PUBLISH */
+  /* TOGGLE */
 
   projectsContainer
-    .querySelectorAll(
-      ".toggle-project"
-    )
+    .querySelectorAll(".toggle-project")
     .forEach(button => {
 
       button.addEventListener(
@@ -1272,9 +1296,7 @@ function setupProjectActions() {
   /* DELETE */
 
   projectsContainer
-    .querySelectorAll(
-      ".delete-project"
-    )
+    .querySelectorAll(".delete-project")
     .forEach(button => {
 
       button.addEventListener(
@@ -1346,8 +1368,7 @@ function setupProjectActions() {
 
 
             if (
-              editingProjectId ===
-              id
+              editingProjectId === id
             ) {
 
               resetProjectForm();
@@ -1439,35 +1460,25 @@ if (form) {
         const projectData = {
 
           title:
-            getElementValue(
-              "title"
-            ),
+            getElementValue("title"),
 
           category:
-            getElementValue(
-              "category"
-            ),
+            getElementValue("category"),
 
           description:
-            getElementValue(
-              "description"
-            ),
+            getElementValue("description"),
 
           project_url:
-            getElementValue(
-              "project-url"
-            ) || null,
+            getElementValue("project-url") ||
+            null,
 
           cover_image:
-            getElementValue(
-              "cover-image"
-            ) || null,
+            getElementValue("cover-image") ||
+            null,
 
           sort_order:
             Number(
-              getElementValue(
-                "sort-order"
-              )
+              getElementValue("sort-order")
             ) || 0,
 
           is_published:
@@ -1478,9 +1489,7 @@ if (form) {
         };
 
 
-        /* =================================
-           ADD
-        ================================= */
+        /* ADD */
 
         if (!editingProjectId) {
 
@@ -1530,9 +1539,7 @@ if (form) {
         }
 
 
-        /* =================================
-           EDIT
-        ================================= */
+        /* EDIT */
 
         else {
 
@@ -1551,9 +1558,7 @@ if (form) {
 
 
           if (oldProjectError) {
-
             throw oldProjectError;
-
           }
 
 
@@ -1601,11 +1606,6 @@ if (form) {
 
           }
 
-
-          /*
-            Delete old media only
-            after successful update.
-          */
 
           if (
             uploadedFile &&
@@ -1659,13 +1659,11 @@ if (logoutButton) {
     "click",
     async () => {
 
-      await supabaseClient
-        .auth
-        .signOut();
+      await supabaseClient.auth.signOut();
 
-
-      window.location.href =
-        "admin.html";
+      window.location.replace(
+        "admin.html"
+      );
 
     }
   );
@@ -1679,32 +1677,22 @@ if (logoutButton) {
 
 async function startDashboard() {
 
-  try {
-
-    const authenticated =
-      await requireAuth();
+  const authenticated =
+    await requireAuth();
 
 
-    if (!authenticated) {
-      return;
-    }
-
-
-    await loadProjects();
-
+  if (!authenticated) {
+    return;
   }
 
-  catch (error) {
 
-    console.error(error);
-
-    setMessage(
-      "حدث خطأ في تحميل لوحة التحكم."
-    );
-
-  }
+  await loadProjects();
 
 }
 
+
+/* =========================================
+   START
+========================================= */
 
 startDashboard();
