@@ -338,3 +338,18 @@ if (loginForm) {
 ========================================= */
 
 checkExistingSession();
+fetch(
+  `${SUPABASE_URL}/auth/v1/settings`,
+  {
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY
+    }
+  }
+)
+  .then(response => response.text())
+  .then(result => {
+    console.log("SUPABASE TEST:", result);
+  })
+  .catch(error => {
+    console.error("SUPABASE TEST FAILED:", error);
+  });
