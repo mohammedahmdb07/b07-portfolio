@@ -1,45 +1,41 @@
 "use strict";
 
+/* =========================================
+   B07 PORTFOLIO
+   Admin Login
+========================================= */
+
 const SUPABASE_URL =
-  "https://vzmrdfyxzjbrgbcgydbb.supabase.co";
+  "https://vzmrdfyxzjbrgbcgydb.supabase.co";
 
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_lMrhyGww4C8LZW9Db4_Puw_35HXrOJC";
 
 
 /* =========================================
-   SUPABASE
+   SUPABASE CLIENT
 ========================================= */
 
 if (
   !window.supabase ||
   typeof window.supabase.createClient !== "function"
 ) {
-
-  console.error(
-    "Supabase library is not loaded."
-  );
-
-  const message =
-    document.getElementById(
-      "login-message"
-    );
-
-  if (message) {
-    message.textContent =
-      "تعذر تحميل نظام تسجيل الدخول. أعد تحميل الصفحة.";
-  }
-
-  throw new Error(
-    "Supabase library is not loaded."
-  );
+  throw new Error("Supabase library is not loaded.");
 }
 
 
 const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: "b07-supabase-auth"
+      }
+    }
   );
 
 
@@ -48,24 +44,16 @@ const supabaseClient =
 ========================================= */
 
 const loginForm =
-  document.getElementById(
-    "login-form"
-  );
+  document.getElementById("login-form");
 
 const loginMessage =
-  document.getElementById(
-    "login-message"
-  );
+  document.getElementById("login-message");
 
 const emailInput =
-  document.getElementById(
-    "email"
-  );
+  document.getElementById("email");
 
 const passwordInput =
-  document.getElementById(
-    "password"
-  );
+  document.getElementById("password");
 
 
 /* =========================================
@@ -76,64 +64,52 @@ function setLoginMessage(
   text,
   isError = false
 ) {
-
   if (!loginMessage) {
     return;
   }
 
-  loginMessage.textContent =
-    text;
+  loginMessage.textContent = text;
 
   loginMessage.setAttribute(
     "data-error",
     isError ? "true" : "false"
   );
-
 }
 
 
 /* =========================================
-   CHECK EXISTING SESSION
+   CHECK SESSION
 ========================================= */
 
 async function checkExistingSession() {
-
   try {
-
     const {
       data,
       error
     } =
       await supabaseClient.auth.getSession();
 
-
     if (error) {
-      throw error;
+      console.error(
+        "Session check error:",
+        error
+      );
+
+      return;
     }
 
-
-    if (
-      data &&
-      data.session
-    ) {
-
+    if (data && data.session) {
       window.location.replace(
         "admin-dashboard.html"
       );
-
     }
 
-  }
-
-  catch (error) {
-
+  } catch (error) {
     console.error(
-      "Session check error:",
+      "Session check failed:",
       error
     );
-
   }
-
 }
 
 
@@ -141,14 +117,7 @@ async function checkExistingSession() {
    LOGIN
 ========================================= */
 
-if (!loginForm) {
-
-  console.error(
-    "Login form not found."
-  );
-
-}
-else {
+if (loginForm) {
 
   loginForm.addEventListener(
     "submit",
@@ -169,23 +138,19 @@ else {
 
 
       if (!email) {
-
         setLoginMessage(
           "أدخل البريد الإلكتروني.",
           true
         );
-
         return;
       }
 
 
       if (!password) {
-
         setLoginMessage(
           "أدخل كلمة المرور.",
           true
         );
-
         return;
       }
 
@@ -228,43 +193,29 @@ else {
           );
 
 
-          let message =
-            "تعذر تسجيل الدخول.";
-
-
           if (
             error.message ===
             "Invalid login credentials"
           ) {
 
-            message =
-              "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+            setLoginMessage(
+              "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+              true
+            );
+
+          } else {
+
+            setLoginMessage(
+              `تعذر تسجيل الدخول: ${error.message}`,
+              true
+            );
 
           }
-          else if (
-            error.message
-          ) {
-
-            message =
-              `تعذر تسجيل الدخول: ${error.message}`;
-
-          }
-
-
-          setLoginMessage(
-            message,
-            true
-          );
 
 
           if (submitButton) {
-
-            submitButton.disabled =
-              false;
-
-            submitButton.textContent =
-              "دخول";
-
+            submitButton.disabled = false;
+            submitButton.textContent = "دخول";
           }
 
           return;
@@ -273,23 +224,58 @@ else {
 
         if (
           !data ||
-          !data.session
+          !data.session ||
+          !data.user
         ) {
 
           setLoginMessage(
-            "تمت محاولة تسجيل الدخول لكن لم يتم إنشاء جلسة.",
+            "تم تسجيل الدخول لكن لم يتم إنشاء جلسة.",
             true
           );
 
 
           if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = "دخول";
+          }
 
-            submitButton.disabled =
-              false;
+          return;
+        }
 
-            submitButton.textContent =
-              "دخول";
 
+        /*
+          التأكد من أن الجلسة محفوظة
+          قبل الانتقال إلى لوحة التحكم.
+        */
+
+        const {
+          data: sessionData,
+          error: sessionError
+        } =
+          await supabaseClient.auth.getSession();
+
+
+        if (
+          sessionError ||
+          !sessionData ||
+          !sessionData.session
+        ) {
+
+          console.error(
+            "Session was not persisted:",
+            sessionError
+          );
+
+
+          setLoginMessage(
+            "تم تسجيل الدخول لكن تعذر حفظ الجلسة.",
+            true
+          );
+
+
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = "دخول";
           }
 
           return;
@@ -298,6 +284,17 @@ else {
 
         setLoginMessage(
           "تم تسجيل الدخول بنجاح."
+        );
+
+
+        /*
+          نعطي Supabase لحظة لحفظ الجلسة
+          في localStorage قبل الانتقال.
+        */
+
+        await new Promise(
+          resolve =>
+            setTimeout(resolve, 300)
         );
 
 
@@ -316,7 +313,7 @@ else {
 
 
         setLoginMessage(
-          error.message
+          error && error.message
             ? `حدث خطأ: ${error.message}`
             : "حدث خطأ أثناء تسجيل الدخول.",
           true
@@ -324,13 +321,8 @@ else {
 
 
         if (submitButton) {
-
-          submitButton.disabled =
-            false;
-
-          submitButton.textContent =
-            "دخول";
-
+          submitButton.disabled = false;
+          submitButton.textContent = "دخول";
         }
 
       }
