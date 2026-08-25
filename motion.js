@@ -2,10 +2,40 @@
 
 /* =========================================
    B07 PORTFOLIO
-   Smooth Page Motion System
+   Navigation Menu & Page Motion System
    ========================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
+  /* =========================
+     MOBILE MENU TOGGLE
+     ========================= */
+  const menuToggle = document.getElementById("menu-toggle");
+  const mainNavigation = document.getElementById("main-navigation");
+
+  if (menuToggle && mainNavigation) {
+    menuToggle.addEventListener("click", () => {
+      const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
+      menuToggle.setAttribute("aria-expanded", String(!isOpen));
+      mainNavigation.classList.toggle("is-open");
+    });
+
+    // إغلاق القائمة عند الضغط على أي رابط
+    mainNavigation.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        menuToggle.setAttribute("aria-expanded", "false");
+        mainNavigation.classList.remove("is-open");
+      });
+    });
+  }
+
+  /* =========================
+     CURRENT YEAR IN FOOTER
+     ========================= */
+  const yearElement = document.getElementById("current-year");
+  if (yearElement) {
+    yearElement.textContent = new Date().getFullYear();
+  }
+
   /* =========================
      PAGE ENTER
      ========================= */
