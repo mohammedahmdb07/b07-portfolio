@@ -1,351 +1,59 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <meta
-    name="description"
-    content="تفاصيل مشروع محمد أحمد."
-  >
-
-  <meta
-    name="theme-color"
-    content="#080808"
-  >
-
-  <title>المشروع | محمد أحمد</title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="أعمال ومشاريع محمد أحمد في تصميم الجرافيك والبوسترات والفيديوهات.">
+  <meta name="theme-color" content="#080808">
+  <title>المشاريع | محمد أحمد | B07 Portfolio</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
-
-  <!-- =========================
-       HEADER
-  ========================== -->
-
+  <!-- HEADER -->
   <header class="site-header">
-
     <div class="container nav-container">
-
-      <a
-        href="index.html"
-        class="logo"
-        aria-label="محمد أحمد"
-      >
-        B07
-      </a>
-
-
-      <button
-        class="menu-toggle"
-        id="menu-toggle"
-        type="button"
-        aria-label="فتح القائمة"
-        aria-expanded="false"
-        aria-controls="main-navigation"
-      >
-
+      <a href="index.html" class="logo" aria-label="محمد أحمد">B07</a>
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-label="فتح القائمة" aria-expanded="false" aria-controls="main-navigation">
         <span></span>
         <span></span>
         <span></span>
-
       </button>
-
-
-      <nav
-        class="main-nav"
-        id="main-navigation"
-        aria-label="التنقل الرئيسي"
-      >
-
-        <a href="index.html">
-          الرئيسية
-        </a>
-
-        <a
-          href="projects.html"
-          aria-current="page"
-        >
-          المشاريع
-        </a>
-
-        <a href="about.html">
-          عنّي
-        </a>
-
-        <a href="contact.html">
-          تواصل
-        </a>
-
+      <nav class="main-nav" id="main-navigation" aria-label="التنقل الرئيسي">
+        <a href="index.html">الرئيسية</a>
+        <a href="projects.html" aria-current="page">المشاريع</a>
+        <a href="about.html">عنّي</a>
+        <a href="contact.html">تواصل</a>
       </nav>
-
     </div>
-
   </header>
 
-
-  <!-- =========================
-       MAIN
-  ========================== -->
-
+  <!-- MAIN -->
   <main>
-
-    <section
-      class="project-details-section section"
-      aria-labelledby="project-title"
-    >
-
+    <section class="section">
       <div class="container">
-
-        <!-- LOADING -->
-
-        <div
-          id="project-loading"
-          class="loading-state"
-        >
-
-          <span
-            class="loading-spinner"
-            aria-hidden="true"
-          ></span>
-
-          <p>
-            جاري تحميل المشروع...
-          </p>
-
+        <div class="section-heading">
+          <p class="eyebrow">PORTFOLIO</p>
+          <h1>المشاريع</h1>
         </div>
-
-
-        <!-- PROJECT -->
-
-        <article
-          id="project-details"
-          class="project-details"
-          hidden
-        >
-
-          <div class="project-details-heading">
-
-            <p
-              id="project-category"
-              class="eyebrow"
-            >
-              PROJECT
-            </p>
-
-
-            <h1 id="project-title">
-              المشروع
-            </h1>
-
-
-            <p
-              id="project-description"
-              class="project-details-description"
-            ></p>
-
+        <div id="projects-grid" class="projects-grid">
+          <div class="loading-state">
+            <p>جاري تحميل المشاريع...</p>
           </div>
-
-
-          <!-- MEDIA -->
-
-          <div
-            id="project-media"
-            class="project-details-media"
-          ></div>
-
-
-          <!-- EXTERNAL LINK -->
-
-          <div
-            id="project-actions"
-            class="project-details-actions"
-          ></div>
-
-
-          <!-- BACK -->
-
-          <div class="project-back">
-
-            <a
-              href="projects.html"
-              class="button button-secondary"
-            >
-              العودة للمشاريع
-            </a>
-
-          </div>
-
-        </article>
-
-
-        <!-- ERROR -->
-
-        <div
-          id="project-error"
-          class="loading-state"
-          hidden
-        >
-
-          <p id="project-error-message">
-            تعذر تحميل المشروع.
-          </p>
-
-
-          <a
-            href="projects.html"
-            class="button button-secondary"
-          >
-            العودة للمشاريع
-          </a>
-
         </div>
-
       </div>
-
     </section>
-
   </main>
 
-
-  <!-- =========================
-       FOOTER
-  ========================== -->
-
+  <!-- FOOTER -->
   <footer class="site-footer">
-
     <div class="container footer-content">
-
-      <p>
-        ©
-        <span id="current-year"></span>
-        B07 Portfolio
-      </p>
-
-
-      <a href="index.html">
-        العودة للرئيسية
-      </a>
-
+      <p>© <span id="current-year"></span> B07 Portfolio</p>
+      <a href="index.html">العودة للرئيسية</a>
     </div>
-
   </footer>
 
-
-  <!-- =========================
-       MOBILE MENU
-  ========================== -->
-
-  <script>
-
-    "use strict";
-
-
-    const yearElement =
-      document.getElementById(
-        "current-year"
-      );
-
-
-    if (yearElement) {
-
-      yearElement.textContent =
-        new Date().getFullYear();
-
-    }
-
-
-    const menuToggle =
-      document.getElementById(
-        "menu-toggle"
-      );
-
-
-    const mainNavigation =
-      document.getElementById(
-        "main-navigation"
-      );
-
-
-    if (
-      menuToggle &&
-      mainNavigation
-    ) {
-
-      menuToggle.addEventListener(
-        "click",
-        () => {
-
-          const isOpen =
-            menuToggle.getAttribute(
-              "aria-expanded"
-            ) === "true";
-
-
-          menuToggle.setAttribute(
-            "aria-expanded",
-            String(!isOpen)
-          );
-
-
-          mainNavigation.classList.toggle(
-            "is-open"
-          );
-
-        }
-      );
-
-
-      mainNavigation
-        .querySelectorAll("a")
-        .forEach(link => {
-
-          link.addEventListener(
-            "click",
-            () => {
-
-              menuToggle.setAttribute(
-                "aria-expanded",
-                "false"
-              );
-
-
-              mainNavigation.classList.remove(
-                "is-open"
-              );
-
-            }
-          );
-
-        });
-
-    }
-
-  </script>
-
-
-  <!-- =========================
-       PROJECT DETAILS
-  ========================== -->
-
-  <script
-    src="project.js"
-    defer
-  ></script>
-
+  <!-- JAVASCRIPT -->
+  <script src="app.js" defer></script>
+  <script src="motion.js" defer></script>
 </body>
-
 </html>
