@@ -57,27 +57,6 @@
   </footer>
 
   <!-- JAVASCRIPT -->
-  <script>
-    "use strict";
-    const yearElement = document.getElementById("current-year");
-    if (yearElement) yearElement.textContent = new Date().getFullYear();
-
-    const menuToggle = document.getElementById("menu-toggle");
-    const mainNavigation = document.getElementById("main-navigation");
-    if (menuToggle && mainNavigation) {
-      menuToggle.addEventListener("click", () => {
-        const isOpen = menuToggle.getAttribute("aria-expanded") === "true";
-        menuToggle.setAttribute("aria-expanded", String(!isOpen));
-        mainNavigation.classList.toggle("is-open");
-      });
-      mainNavigation.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", () => {
-          menuToggle.setAttribute("aria-expanded", "false");
-          mainNavigation.classList.remove("is-open");
-        });
-      });
-    }
-  </script>
   <script src="motion.js" defer></script>
 </body>
 </html>
