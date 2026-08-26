@@ -5,8 +5,8 @@
    Admin Dashboard Functionality
    ========================================= */
 
-const SUPABASE_URL = "https://your-supabase-url.supabase.co";
-const SUPABASE_ANON_KEY = "your-anon-key";
+const SUPABASE_URL = "https://vzmrdfyxzjbrgbcgydbb.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_lMrhyGww4C8LZW9Db4_Puw_35HXrOJC";
 
 const supabaseClient = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
