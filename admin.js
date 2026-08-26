@@ -17,7 +17,7 @@ const projectIdInput = document.getElementById("project-id");
 const titleInput = document.getElementById("project-title");
 const categoryInput = document.getElementById("project-category");
 const descriptionInput = document.getElementById("project-description");
-const imagesInput = document.getElementById("project-images");
+const projectFilesInput = document.getElementById("project-files");
 const submitBtn = document.getElementById("submit-btn");
 const cancelBtn = document.getElementById("cancel-btn");
 const formTitle = document.getElementById("form-title");
@@ -77,17 +77,56 @@ async function fetchAdminProjects() {
     .join("");
 }
 
-// حفظ أو تعديل مشروع
+// حفظ أو تعديل مشروع مع رفع الملفات
 async function handleFormSubmit(e) {
   e.preventDefault();
 
-  const rawImages = imagesInput.value;
-  const imagesArray = rawImages
-    .split(/[\n,]+/)
-    .map((url) => url.trim())
-    .filter((url) => url.length > 0);
+  submitBtn.textContent = "جاري الرفع والحفظ...";
+  submitBtn.disabled = true;
 
+  let imagesArray = [];
   const id = projectIdInput.value;
+
+  // جلب الصور القديمة في حالة التعديل
+  if (id) {
+    const { data: existingProject } = await supabaseClient
+      .from("projects")
+      .select("images, cover_url, image_url")
+      .eq("id", id)
+      .single();
+
+    if (existingProject) {
+      imagesArray = existingProject.images || [existingProject.cover_url || existingProject.image_url].filter(Boolean);
+    }
+  }
+
+  // رفع الصور الجديدة المحددة إن وجدت
+  if (projectFilesInput && projectFilesInput.files.length > 0) {
+    const uploadedUrls = [];
+    for (let i = 0; i < projectFilesInput.files.length; i++) {
+      const file = projectFilesInput.files[i];
+      const fileName = `project_${Date.now()}_${i}_${file.name}`;
+
+      const { data, error: uploadError } = await supabaseClient.storage
+        .from("portfolio-images")
+        .upload(fileName, file);
+
+      if (!uploadError && data) {
+        const { data: publicUrlData } = supabaseClient.storage
+          .from("portfolio-images")
+          .getPublicUrl(data.path);
+
+        if (publicUrlData && publicUrlData.publicUrl) {
+          uploadedUrls.push(publicUrlData.publicUrl);
+        }
+      }
+    }
+
+    if (uploadedUrls.length > 0) {
+      imagesArray = id ? [...imagesArray, ...uploadedUrls] : uploadedUrls;
+    }
+  }
+
   const projectData = {
     title: titleInput.value,
     category: categoryInput.value,
@@ -107,6 +146,9 @@ async function handleFormSubmit(e) {
     const res = await supabaseClient.from("projects").insert([projectData]);
     error = res.error;
   }
+
+  submitBtn.textContent = "حفظ المشروع";
+  submitBtn.disabled = false;
 
   if (error) {
     alert("حدث خطأ أثناء حفظ المشروع: " + error.message);
@@ -145,11 +187,6 @@ window.editProject = async function (id) {
   categoryInput.value = project.category;
   descriptionInput.value = project.description;
 
-  const imageList = project.images && project.images.length > 0
-    ? project.images
-    : [project.cover_url || ""];
-  imagesInput.value = imageList.join("\n");
-
   formTitle.textContent = "تعديل المشروع";
   submitBtn.textContent = "تحديث البيانات";
   cancelBtn.hidden = false;
@@ -158,7 +195,7 @@ window.editProject = async function (id) {
 
 // حذف مشروع
 window.deleteProject = async function (id) {
-  if (!confirm("هل أنت تأكد من رغبتك في حذف هذا المشروع؟")) return;
+  if (!confirm("هل أنت متأكد من رغبتك في حذف هذا المشروع؟")) return;
 
   const { error } = await supabaseClient
     .from("projects")
