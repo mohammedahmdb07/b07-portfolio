@@ -26,7 +26,6 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadProjectDetails(projectId) {
   const loadingEl = document.getElementById("project-loading");
   const detailsEl = document.getElementById("project-details");
-  const errorEl = document.getElementById("project-error");
 
   const { data: project, error } = await supabaseClient
     .from("projects")
@@ -44,31 +43,44 @@ async function loadProjectDetails(projectId) {
   const categoryEl = document.getElementById("project-category");
   const descriptionEl = document.getElementById("project-description");
 
-  if (titleEl) titleEl.textContent = project.title;
-  if (categoryEl) categoryEl.textContent = project.category;
-  if (descriptionEl) descriptionEl.textContent = project.description;
+  if (titleEl) titleEl.textContent = project.title || "";
+  if (categoryEl) categoryEl.textContent = project.category || "";
+  if (descriptionEl) descriptionEl.textContent = project.description || "";
 
   // عرض كل الصور المرفوعة
   const mediaContainer = document.getElementById("project-media");
   if (mediaContainer) {
     mediaContainer.innerHTML = "";
 
-    // جلب قائمة الصور (سواء كانت مصفوفة images أو صورة كوفر قديمة)
-    const imageList = project.images && project.images.length > 0
-      ? project.images
-      : [project.cover_url || project.image_url];
+    // تجميع كافة روابط الصور المتاحة وتنظيف القيم الفارغة
+    let rawImages = [];
+    if (Array.isArray(project.images) && project.images.length > 0) {
+      rawImages = project.images;
+    } else if (typeof project.images === "string" && project.images.trim() !== "") {
+      rawImages = project.images.split(",").map((s) => s.trim());
+    } else {
+      rawImages = [project.cover_url, project.image_url];
+    }
 
-    imageList.forEach((imgUrl) => {
-      if (!imgUrl) return;
+    // تصفية المصفوفة لإزالة أي قيم فارغة أو غير صالحة
+    const validImages = rawImages.filter(
+      (url) => typeof url === "string" && url.trim().length > 0
+    );
 
-      const imgElement = document.createElement("img");
-      imgElement.src = imgUrl;
-      imgElement.alt = project.title;
-      imgElement.loading = "lazy";
-      imgElement.style.cssText = "width: 100%; border-radius: var(--radius); border: 1px solid var(--panel-border); margin-bottom: 24px; display: block;";
+    if (validImages.length === 0) {
+      mediaContainer.innerHTML = "<p style='color: var(--muted);'>لا توجد صور معروضة لهذا المشروع.</p>";
+    } else {
+      validImages.forEach((imgUrl) => {
+        const imgElement = document.createElement("img");
+        imgElement.src = imgUrl;
+        imgElement.alt = project.title || "صورة المشروع";
+        imgElement.loading = "lazy";
+        imgElement.style.cssText =
+          "width: 100%; height: auto; border-radius: var(--radius, 12px); border: 1px solid var(--panel-border, rgba(255,255,255,0.1)); margin-bottom: 24px; display: block; opacity: 1 !important; visibility: visible !important;";
 
-      mediaContainer.appendChild(imgElement);
-    });
+        mediaContainer.appendChild(imgElement);
+      });
+    }
   }
 
   if (loadingEl) loadingEl.hidden = true;
