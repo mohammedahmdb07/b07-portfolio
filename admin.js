@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// تحويل الصورة إلى Base64 كخطة بديلة آمنة ومضمونة 100%
+// تحويل الصورة إلى Base64 كخطة بديلة آمنة
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -101,12 +101,12 @@ async function handleFormSubmit(e) {
     if (id) {
       const { data: existingProject } = await supabaseClient
         .from("projects")
-        .select("images, cover_url, image_url")
+        .select("images, image_url")
         .eq("id", id)
         .single();
 
       if (existingProject) {
-        imagesArray = existingProject.images || [existingProject.cover_url || existingProject.image_url].filter(Boolean);
+        imagesArray = existingProject.images || [existingProject.image_url].filter(Boolean);
       }
     }
 
@@ -119,7 +119,6 @@ async function handleFormSubmit(e) {
         try {
           const safeFileName = `${Date.now()}_${i}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
           
-          // محاولة الرفع لـ Storage
           const { data, error: uploadError } = await supabaseClient.storage
             .from("portfolio-images")
             .upload(safeFileName, file);
@@ -135,7 +134,7 @@ async function handleFormSubmit(e) {
             }
           }
 
-          // إذا فشل الرفع لـ Supabase Storage (بسبب الأذونات)، يتم حفظ الصورة مباشرة بنجاح كـ Base64
+          // بديل Base64 في حالة تعذر الرفع للـ Storage
           const base64Image = await fileToBase64(file);
           uploadedUrls.push(base64Image);
 
@@ -152,12 +151,12 @@ async function handleFormSubmit(e) {
 
     const firstImage = imagesArray[0] || "";
 
+    // تم حذف cover_url لتفادي خطأ العمود المفقود
     const projectData = {
       title: titleInput.value,
       category: categoryInput.value,
       description: descriptionInput.value,
       images: imagesArray,
-      cover_url: firstImage,
       image_url: firstImage
     };
 
@@ -176,7 +175,7 @@ async function handleFormSubmit(e) {
     if (error) {
       alert("حدث خطأ في قاعدة البيانات: " + error.message);
     } else {
-      alert("تم حفظ المشروع والصور بنجاح!");
+      alert("تم حفظ المشروع بنجاح!");
       resetForm();
       fetchAdminProjects();
     }
