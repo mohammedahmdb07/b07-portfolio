@@ -3,85 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>B07 Admin</title>
-
+  <meta name="description" content="لوحة التحكم — إدارة المشاريع.">
+  <meta name="theme-color" content="#080808">
+  <title>لوحة التحكم | B07</title>
   <link rel="stylesheet" href="style.css">
 </head>
+<body class="admin-page">
 
-<body>
-
-  <main class="admin-page">
-
-    <div class="container">
-
-      <header class="admin-header">
-        <p class="eyebrow">B07 PORTFOLIO</p>
-
-        <h1>لوحة الإدارة</h1>
-
-        <p>
-          إدارة المشاريع والمحتوى.
-        </p>
-      </header>
-
-
-      <section class="admin-card">
-
-        <h2>تسجيل الدخول</h2>
-
-        <form id="login-form">
-
-          <label for="email">
-            البريد الإلكتروني
-          </label>
-
-          <input
-            id="email"
-            type="email"
-            autocomplete="email"
-            required
-          >
-
-
-          <label for="password">
-            كلمة المرور
-          </label>
-
-          <input
-            id="password"
-            type="password"
-            autocomplete="current-password"
-            required
-          >
-
-
-          <button
-            type="submit"
-            class="button button-primary"
-          >
-            دخول
-          </button>
-
-        </form>
-
-        <p
-          id="login-message"
-          aria-live="polite"
-        ></p>
-
-      </section>
-
+  <div class="container">
+    <div class="admin-header">
+      <p class="eyebrow">DASHBOARD</p>
+      <h1>إدارة المشاريع</h1>
+      <a href="index.html" class="button button-secondary" style="margin-top: 12px;">العودة للموقع</a>
     </div>
 
-  </main>
+    <!-- FORM SECTION -->
+    <div class="admin-card">
+      <h2 id="form-title">إضافة مشروع جديد</h2>
+      <form id="project-form">
+        <input type="hidden" id="project-id">
 
+        <div>
+          <label for="project-title">عنوان المشروع:</label>
+          <input type="text" id="project-title" required placeholder="مثال: تصميم بوستر إعلاني">
+        </div>
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script>
+        <div>
+          <label for="project-category">التصنيف:</label>
+          <input type="text" id="project-category" required placeholder="مثال: البوسترات / الفيديوهات">
+        </div>
 
+        <div>
+          <label for="project-description">الوصف:</label>
+          <textarea id="project-description" rows="4" required placeholder="اكتب تفاصيل المشروع..."></textarea>
+        </div>
+
+        <div>
+          <label for="project-images">روابط الصور (ضع كل رابط في سطر منفصل):</label>
+          <textarea id="project-images" rows="5" required placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 12px;">
+          <button type="submit" class="button button-primary" id="submit-btn">حفظ المشروع</button>
+          <button type="button" class="button button-secondary" id="cancel-btn" hidden>إلغاء التعديل</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- PROJECTS LIST -->
+    <div class="admin-card">
+      <h2>المشاريع الحالية</h2>
+      <div id="admin-projects-list">
+        <p>جاري التحميل...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="admin.js" defer></script>
-
+  <script src="motion.js" defer></script>
 </body>
 </html>
