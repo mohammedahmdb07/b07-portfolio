@@ -53,7 +53,7 @@ async function fetchAdminProjects() {
   const { data: projects, error } = await supabaseClient
     .from("projects")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("id", { ascending: false });
 
   if (error) {
     projectsList.innerHTML = "<p>حدث خطأ أثناء جلب المشاريع.</p>";
@@ -68,14 +68,14 @@ async function fetchAdminProjects() {
   projectsList.innerHTML = projects
     .map(
       (project) => `
-    <div class="project-card" style="margin-bottom: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); opacity: ${project.is_published === false ? '0.5' : '1'};">
+    <div class="project-card" style="margin-bottom: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); opacity: ${project.is_hidden ? '0.5' : '1'};">
       <div>
-        <h3 style="font-size: 1.1rem; margin-bottom: 4px;">${project.title || 'بدون عنوان'} ${project.is_published === false ? '(مخفي)' : ''}</h3>
+        <h3 style="font-size: 1.1rem; margin-bottom: 4px;">${project.title || 'بدون عنوان'} ${project.is_hidden ? '(مخفي)' : ''}</h3>
         <p style="font-size: 0.85rem; color: var(--muted);">${project.category || ''}</p>
       </div>
       <div class="admin-project-actions" style="display: flex; gap: 8px;">
-        <button type="button" class="button button-secondary" onclick="toggleHideProject('${project.id}', ${project.is_published})">
-          ${project.is_published === false ? 'إظهار' : 'إخفاء'}
+        <button type="button" class="button button-secondary" onclick="toggleHideProject('${project.id}', ${project.is_hidden})">
+          ${project.is_hidden ? 'إظهار' : 'إخفاء'}
         </button>
         <button type="button" class="button button-secondary" onclick="editProject('${project.id}')">تعديل</button>
         <button type="button" class="button button-secondary" style="border-color: #ff4d4d; color: #ff4d4d;" onclick="deleteProject('${project.id}')">حذف</button>
@@ -101,12 +101,12 @@ async function handleFormSubmit(e) {
     if (id) {
       const { data: existingProject } = await supabaseClient
         .from("projects")
-        .select("media_urls")
+        .select("images")
         .eq("id", id)
         .single();
 
-      if (existingProject && existingProject.media_urls) {
-        imagesArray = Array.isArray(existingProject.media_urls) ? existingProject.media_urls : [existingProject.media_urls];
+      if (existingProject && existingProject.images) {
+        imagesArray = Array.isArray(existingProject.images) ? existingProject.images : [existingProject.images];
       }
     }
 
@@ -148,13 +148,13 @@ async function handleFormSubmit(e) {
       }
     }
 
-    // المطابقة الدقيقة مع أسماء الأعمدة في قاعدة البيانات عندك
+    // استخدام اسم العمود الصح images
     const projectData = {
       title: titleInput.value,
       category: categoryInput.value,
       description: descriptionInput.value,
-      media_urls: imagesArray,
-      is_published: true
+      images: imagesArray,
+      is_hidden: false
     };
 
     let error;
@@ -188,7 +188,7 @@ async function handleFormSubmit(e) {
 window.toggleHideProject = async function (id, currentStatus) {
   const { error } = await supabaseClient
     .from("projects")
-    .update({ is_published: !currentStatus })
+    .update({ is_hidden: !currentStatus })
     .eq("id", id);
 
   if (error) {
