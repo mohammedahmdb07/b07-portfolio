@@ -38,7 +38,7 @@ async function loadProjectDetails(projectId) {
     return;
   }
 
-  // تعبئة النصوص
+  // تعبئة البيانات النصية
   const titleEl = document.getElementById("project-title");
   const categoryEl = document.getElementById("project-category");
   const descriptionEl = document.getElementById("project-description");
@@ -47,42 +47,35 @@ async function loadProjectDetails(projectId) {
   if (categoryEl) categoryEl.textContent = project.category || "";
   if (descriptionEl) descriptionEl.textContent = project.description || "";
 
-  // عرض الصور
+  // عرض الصور المرفوعة من حقل media_urls
   const mediaContainer = document.getElementById("project-media");
   if (mediaContainer) {
     mediaContainer.innerHTML = "";
 
-    // تجميع كل الصور المتاحة
-    let imageList = [];
-    if (Array.isArray(project.images) && project.images.length > 0) {
-      imageList = project.images;
-    } else if (project.cover_url) {
-      imageList = [project.cover_url];
-    } else if (project.image_url) {
-      imageList = [project.image_url];
+    let rawImages = [];
+    if (Array.isArray(project.media_urls)) {
+      rawImages = project.media_urls;
+    } else if (typeof project.media_urls === "string" && project.media_urls.trim() !== "") {
+      rawImages = [project.media_urls];
     }
 
-    // تصفية الروابط
-    const cleanImages = imageList.filter(url => typeof url === 'string' && url.trim() !== "");
+    const cleanImages = rawImages.filter(
+      (url) => typeof url === "string" && url.trim().length > 0
+    );
 
     if (cleanImages.length === 0) {
-      mediaContainer.innerHTML = "<p style='color: #888; text-align: center; padding: 20px;'>لا توجد صور مرفوعة لهذا المشروع.</p>";
+      mediaContainer.innerHTML =
+        "<p style='color: #888; text-align: center; padding: 20px;'>لا توجد صور معروضة لهذا المشروع.</p>";
     } else {
       cleanImages.forEach((imgUrl) => {
-        const img = document.createElement("img");
-        img.src = imgUrl;
-        img.alt = project.title || "Project Image";
-        // إجبار الصورة على الظهور وتحديد أبعادها لمنع الشاشة السوداء
-        img.style.width = "100%";
-        img.style.height = "auto";
-        img.style.display = "block";
-        img.style.marginBottom = "20px";
-        img.style.borderRadius = "12px";
-        img.style.border = "1px solid rgba(255,255,255,0.1)";
-        img.style.opacity = "1";
-        img.style.visibility = "visible";
+        const imgElement = document.createElement("img");
+        imgElement.src = imgUrl;
+        imgElement.alt = project.title || "صورة المشروع";
+        imgElement.loading = "lazy";
+        imgElement.style.cssText =
+          "width: 100%; height: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 24px; display: block; opacity: 1 !important; visibility: visible !important;";
 
-        mediaContainer.appendChild(img);
+        mediaContainer.appendChild(imgElement);
       });
     }
   }
