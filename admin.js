@@ -95,7 +95,7 @@ async function handleFormSubmit(e) {
 
   try {
     let imagesArray = [];
-    const id = projectIdInput.value;
+    const id = projectIdInput ? projectIdInput.value : "";
 
     // الاحتفاظ بالصور القديمة عند التعديل
     if (id) {
@@ -148,14 +148,18 @@ async function handleFormSubmit(e) {
       }
     }
 
-    // استخدام اسم العمود الصح images
+    // إعداد البيانات المطابقة فقط للأعمدة الموجودة في الجدول
     const projectData = {
-      title: titleInput.value,
-      category: categoryInput.value,
-      description: descriptionInput.value,
+      title: titleInput ? titleInput.value : "",
+      description: descriptionInput ? descriptionInput.value : "",
       images: imagesArray,
       is_hidden: false
     };
+
+    // إضافة التصنيف فقط إذا كان الحقل موجوداً في الواجهة
+    if (categoryInput && categoryInput.value) {
+      projectData.category = categoryInput.value;
+    }
 
     let error;
     if (id) {
@@ -170,14 +174,14 @@ async function handleFormSubmit(e) {
     }
 
     if (error) {
-      alert("حدث خطأ في قاعدة البيانات: " + error.message);
+      alert("حدث خطأ في قاعدة البيانات: " + (error.message || JSON.stringify(error)));
     } else {
       alert("تم حفظ المشروع بنجاح!");
       resetForm();
       fetchAdminProjects();
     }
   } catch (err) {
-    alert("حدث خطأ: " + err.message);
+    alert("حدث خطأ: " + (err.message || err || "خطأ غير معروف"));
   } finally {
     submitBtn.textContent = "حفظ المشروع";
     submitBtn.disabled = false;
@@ -208,14 +212,14 @@ window.editProject = async function (id) {
 
   if (error || !project) return;
 
-  projectIdInput.value = project.id;
-  titleInput.value = project.title || "";
-  categoryInput.value = project.category || "";
-  descriptionInput.value = project.description || "";
+  if (projectIdInput) projectIdInput.value = project.id;
+  if (titleInput) titleInput.value = project.title || "";
+  if (categoryInput) categoryInput.value = project.category || "";
+  if (descriptionInput) descriptionInput.value = project.description || "";
 
-  formTitle.textContent = "تعديل المشروع";
-  submitBtn.textContent = "تحديث البيانات";
-  cancelBtn.hidden = false;
+  if (formTitle) formTitle.textContent = "تعديل المشروع";
+  if (submitBtn) submitBtn.textContent = "تحديث البيانات";
+  if (cancelBtn) cancelBtn.hidden = false;
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
@@ -237,9 +241,9 @@ window.deleteProject = async function (id) {
 
 // إعادة ضبط النموذج
 function resetForm() {
-  projectIdInput.value = "";
+  if (projectIdInput) projectIdInput.value = "";
   if (projectForm) projectForm.reset();
-  formTitle.textContent = "إضافة مشروع جديد";
-  submitBtn.textContent = "حفظ المشروع";
-  cancelBtn.hidden = true;
+  if (formTitle) formTitle.textContent = "إضافة مشروع جديد";
+  if (submitBtn) submitBtn.textContent = "حفظ المشروع";
+  if (cancelBtn) cancelBtn.hidden = true;
 }
