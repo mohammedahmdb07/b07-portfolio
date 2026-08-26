@@ -47,16 +47,16 @@ async function loadProjectDetails(projectId) {
   if (categoryEl) categoryEl.textContent = project.category || "";
   if (descriptionEl) descriptionEl.textContent = project.description || "";
 
-  // عرض الصور المرفوعة من حقل media_urls
+  // عرض الصور المرفوعة من حقل images
   const mediaContainer = document.getElementById("project-media");
   if (mediaContainer) {
     mediaContainer.innerHTML = "";
 
     let rawImages = [];
-    if (Array.isArray(project.media_urls)) {
-      rawImages = project.media_urls;
-    } else if (typeof project.media_urls === "string" && project.media_urls.trim() !== "") {
-      rawImages = [project.media_urls];
+    if (Array.isArray(project.images)) {
+      rawImages = project.images;
+    } else if (typeof project.images === "string" && project.images.trim() !== "") {
+      rawImages = [project.images];
     }
 
     const cleanImages = rawImages.filter(
