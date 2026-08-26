@@ -14,48 +14,71 @@
     <div class="admin-header">
       <p class="eyebrow">DASHBOARD</p>
       <h1>إدارة المشاريع</h1>
-      <a href="index.html" class="button button-secondary" style="margin-top: 12px;">العودة للموقع</a>
+      <div style="display: flex; gap: 8px; justify-content: center; margin-top: 12px;">
+        <a href="index.html" class="button button-secondary">العودة للموقع</a>
+        <button id="logout-btn" class="button button-secondary" style="border-color: #ff4d4d; color: #ff4d4d; display: none;">تسجيل الخروج</button>
+      </div>
     </div>
 
-    <!-- FORM SECTION -->
-    <div class="admin-card">
-      <h2 id="form-title">إضافة مشروع جديد</h2>
-      <form id="project-form">
-        <input type="hidden" id="project-id">
-
+    <!-- LOGIN SECTION -->
+    <div class="admin-card" id="login-section">
+      <h2>تسجيل الدخول للوحة التحكم</h2>
+      <form id="login-form" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
         <div>
-          <label for="project-title">عنوان المشروع:</label>
-          <input type="text" id="project-title" required placeholder="مثال: تصميم بوستر إعلاني">
+          <label for="login-email">البريد الإلكتروني:</label>
+          <input type="email" id="login-email" required placeholder="admin@example.com" style="width: 100%; padding: 10px; margin-top: 4px; background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: var(--radius); color: inherit;">
         </div>
-
         <div>
-          <label for="project-category">التصنيف:</label>
-          <input type="text" id="project-category" required placeholder="مثال: البوسترات / الفيديوهات">
+          <label for="login-password">كلمة المرور:</label>
+          <input type="password" id="login-password" required placeholder="••••••••" style="width: 100%; padding: 10px; margin-top: 4px; background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: var(--radius); color: inherit;">
         </div>
-
-        <div>
-          <label for="project-description">الوصف:</label>
-          <textarea id="project-description" rows="4" required placeholder="اكتب تفاصيل المشروع..."></textarea>
-        </div>
-
-        <div>
-          <label for="project-files">اختر الصور (يمكنك تحديد أكثر من صورة):</label>
-          <input type="file" id="project-files" accept="image/*" multiple style="display: block; margin-top: 8px; width: 100%; padding: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: var(--radius); color: inherit;">
-          <p style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">اختر الصور من جهازك، وسيتم رفعها وتخزينها تلقائياً.</p>
-        </div>
-
-        <div style="display: flex; gap: 12px; margin-top: 16px;">
-          <button type="submit" class="button button-primary" id="submit-btn">حفظ المشروع</button>
-          <button type="button" class="button button-secondary" id="cancel-btn" hidden>إلغاء التعديل</button>
-        </div>
+        <p id="login-error" style="color: #ff4d4d; font-size: 0.85rem; display: none;"></p>
+        <button type="submit" class="button button-primary" id="login-submit-btn">دخول</button>
       </form>
     </div>
 
-    <!-- PROJECTS LIST -->
-    <div class="admin-card">
-      <h2>المشاريع الحالية</h2>
-      <div id="admin-projects-list">
-        <p>جاري التحميل...</p>
+    <!-- MAIN DASHBOARD CONTENT (HIDDEN BY DEFAULT) -->
+    <div id="admin-content" style="display: none;">
+      <!-- FORM SECTION -->
+      <div class="admin-card">
+        <h2 id="form-title">إضافة مشروع جديد</h2>
+        <form id="project-form">
+          <input type="hidden" id="project-id">
+
+          <div>
+            <label for="project-title">عنوان المشروع:</label>
+            <input type="text" id="project-title" required placeholder="مثال: تصميم بوستر إعلاني">
+          </div>
+
+          <div>
+            <label for="project-category">التصنيف:</label>
+            <input type="text" id="project-category" required placeholder="مثال: البوسترات / الفيديوهات">
+          </div>
+
+          <div>
+            <label for="project-description">الوصف:</label>
+            <textarea id="project-description" rows="4" required placeholder="اكتب تفاصيل المشروع..."></textarea>
+          </div>
+
+          <div>
+            <label for="project-files">اختر الصور (يمكنك تحديد أكثر من صورة):</label>
+            <input type="file" id="project-files" accept="image/*" multiple style="display: block; margin-top: 8px; width: 100%; padding: 8px; background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: var(--radius); color: inherit;">
+            <p style="font-size: 0.8rem; color: var(--muted); margin-top: 4px;">اختر الصور من جهازك، وسيتم رفعها وتخزينها تلقائياً.</p>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 16px;">
+            <button type="submit" class="button button-primary" id="submit-btn">حفظ المشروع</button>
+            <button type="button" class="button button-secondary" id="cancel-btn" hidden>إلغاء التعديل</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- PROJECTS LIST -->
+      <div class="admin-card">
+        <h2>المشاريع الحالية</h2>
+        <div id="admin-projects-list">
+          <p>جاري التحميل...</p>
+        </div>
       </div>
     </div>
   </div>
