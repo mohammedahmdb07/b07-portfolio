@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // جلب المشاريع
 async function fetchAdminProjects() {
-  if (!projectsList) return;
+  if (!projectsList || !supabaseClient) return;
 
   const { data: projects, error } = await supabaseClient
     .from("projects")
@@ -84,77 +84,92 @@ async function handleFormSubmit(e) {
   submitBtn.textContent = "جاري الرفع والحفظ...";
   submitBtn.disabled = true;
 
-  let imagesArray = [];
-  const id = projectIdInput.value;
+  try {
+    let imagesArray = [];
+    const id = projectIdInput.value;
 
-  // جلب الصور القديمة في حالة التعديل
-  if (id) {
-    const { data: existingProject } = await supabaseClient
-      .from("projects")
-      .select("images, cover_url, image_url")
-      .eq("id", id)
-      .single();
+    // جلب الصور القديمة في حالة التعديل
+    if (id) {
+      const { data: existingProject } = await supabaseClient
+        .from("projects")
+        .select("images, cover_url, image_url")
+        .eq("id", id)
+        .single();
 
-    if (existingProject) {
-      imagesArray = existingProject.images || [existingProject.cover_url || existingProject.image_url].filter(Boolean);
-    }
-  }
-
-  // رفع الصور الجديدة المحددة إن وجدت
-  if (projectFilesInput && projectFilesInput.files.length > 0) {
-    const uploadedUrls = [];
-    for (let i = 0; i < projectFilesInput.files.length; i++) {
-      const file = projectFilesInput.files[i];
-      const fileName = `project_${Date.now()}_${i}_${file.name}`;
-
-      const { data, error: uploadError } = await supabaseClient.storage
-        .from("portfolio-images")
-        .upload(fileName, file);
-
-      if (!uploadError && data) {
-        const { data: publicUrlData } = supabaseClient.storage
-          .from("portfolio-images")
-          .getPublicUrl(data.path);
-
-        if (publicUrlData && publicUrlData.publicUrl) {
-          uploadedUrls.push(publicUrlData.publicUrl);
-        }
+      if (existingProject) {
+        imagesArray = existingProject.images || [existingProject.cover_url || existingProject.image_url].filter(Boolean);
       }
     }
 
-    if (uploadedUrls.length > 0) {
-      imagesArray = id ? [...imagesArray, ...uploadedUrls] : uploadedUrls;
+    // رفع الصور الجديدة المحددة إن وجدت
+    if (projectFilesInput && projectFilesInput.files.length > 0) {
+      const uploadedUrls = [];
+      for (let i = 0; i < projectFilesInput.files.length; i++) {
+        const file = projectFilesInput.files[i];
+        
+        // تنظيف اسم الملف من الحروف العربية والرموز الخاصة لمنع استجابة Supabase بالرفض
+        const safeFileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+        const fileName = `project_${Date.now()}_${i}_${safeFileName}`;
+
+        const { data, error: uploadError } = await supabaseClient.storage
+          .from("portfolio-images")
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error("خطأ في رفع الملف:", uploadError);
+          continue;
+        }
+
+        if (data) {
+          const { data: publicUrlData } = supabaseClient.storage
+            .from("portfolio-images")
+            .getPublicUrl(data.path);
+
+          if (publicUrlData && publicUrlData.publicUrl) {
+            uploadedUrls.push(publicUrlData.publicUrl);
+          }
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        imagesArray = id ? [...imagesArray, ...uploadedUrls] : uploadedUrls;
+      }
     }
-  }
 
-  const projectData = {
-    title: titleInput.value,
-    category: categoryInput.value,
-    description: descriptionInput.value,
-    images: imagesArray,
-    cover_url: imagesArray[0] || ""
-  };
+    const firstImage = imagesArray[0] || "";
 
-  let error;
-  if (id) {
-    const res = await supabaseClient
-      .from("projects")
-      .update(projectData)
-      .eq("id", id);
-    error = res.error;
-  } else {
-    const res = await supabaseClient.from("projects").insert([projectData]);
-    error = res.error;
-  }
+    const projectData = {
+      title: titleInput.value,
+      category: categoryInput.value,
+      description: descriptionInput.value,
+      images: imagesArray,
+      cover_url: firstImage,
+      image_url: firstImage
+    };
 
-  submitBtn.textContent = "حفظ المشروع";
-  submitBtn.disabled = false;
+    let error;
+    if (id) {
+      const res = await supabaseClient
+        .from("projects")
+        .update(projectData)
+        .eq("id", id);
+      error = res.error;
+    } else {
+      const res = await supabaseClient.from("projects").insert([projectData]);
+      error = res.error;
+    }
 
-  if (error) {
-    alert("حدث خطأ أثناء حفظ المشروع: " + error.message);
-  } else {
-    resetForm();
-    fetchAdminProjects();
+    if (error) {
+      alert("حدث خطأ أثناء حفظ المشروع: " + error.message);
+    } else {
+      resetForm();
+      fetchAdminProjects();
+    }
+  } catch (err) {
+    alert("حدث خطأ غير متوقع: " + err.message);
+  } finally {
+    submitBtn.textContent = "حفظ المشروع";
+    submitBtn.disabled = false;
   }
 }
 
@@ -212,7 +227,7 @@ window.deleteProject = async function (id) {
 // إعادة ضبط النموذج
 function resetForm() {
   projectIdInput.value = "";
-  projectForm.reset();
+  if (projectForm) projectForm.reset();
   formTitle.textContent = "إضافة مشروع جديد";
   submitBtn.textContent = "حفظ المشروع";
   cancelBtn.hidden = true;
