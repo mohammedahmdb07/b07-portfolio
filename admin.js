@@ -11,6 +11,16 @@ const supabaseClient = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
+// عناصر تسجيل الدخول والتحكم بالصفحة
+const loginSection = document.getElementById("login-section");
+const adminContent = document.getElementById("admin-content");
+const loginForm = document.getElementById("login-form");
+const loginEmailInput = document.getElementById("login-email");
+const loginPasswordInput = document.getElementById("login-password");
+const loginError = document.getElementById("login-error");
+const logoutBtn = document.getElementById("logout-btn");
+
+// عناصر النموذج الأساسي
 const projectForm = document.getElementById("project-form");
 const projectIdInput = document.getElementById("project-id");
 const titleInput = document.getElementById("project-title");
@@ -22,11 +32,63 @@ const cancelBtn = document.getElementById("cancel-btn");
 const formTitle = document.getElementById("form-title");
 const projectsList = document.getElementById("admin-projects-list");
 
-document.addEventListener("DOMContentLoaded", () => {
-  if (supabaseClient) fetchAdminProjects();
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!supabaseClient) return;
+
+  // التحقق من الجلسة الحالية
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  updateAuthUI(session);
+
+  // الاستماع لتغيرات حالة تسجيل الدخول
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    updateAuthUI(session);
+  });
+
+  if (loginForm) loginForm.addEventListener("submit", handleLogin);
+  if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
   if (projectForm) projectForm.addEventListener("submit", handleFormSubmit);
   if (cancelBtn) cancelBtn.addEventListener("click", resetForm);
 });
+
+// تحديث الواجهة بناءً على حالة تسجيل الدخول
+function updateAuthUI(session) {
+  if (session) {
+    if (loginSection) loginSection.style.display = "none";
+    if (adminContent) adminContent.style.display = "block";
+    if (logoutBtn) logoutBtn.style.display = "inline-block";
+    fetchAdminProjects();
+  } else {
+    if (loginSection) loginSection.style.display = "block";
+    if (adminContent) adminContent.style.display = "none";
+    if (logoutBtn) logoutBtn.style.display = "none";
+  }
+}
+
+// تسجيل الدخول
+async function handleLogin(e) {
+  e.preventDefault();
+  if (loginError) loginError.style.display = "none";
+
+  const email = loginEmailInput ? loginEmailInput.value : "";
+  const password = loginPasswordInput ? loginPasswordInput.value : "";
+
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    if (loginError) {
+      loginError.textContent = "بيانات الدخول غير صحيحة: " + error.message;
+      loginError.style.display = "block";
+    }
+  }
+}
+
+// تسجيل الخروج
+async function handleLogout() {
+  await supabaseClient.auth.signOut();
+}
 
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
