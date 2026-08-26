@@ -38,7 +38,7 @@ async function loadProjectDetails(projectId) {
     return;
   }
 
-  // تعبئة بيانات النصوص
+  // تعبئة النصوص
   const titleEl = document.getElementById("project-title");
   const categoryEl = document.getElementById("project-category");
   const descriptionEl = document.getElementById("project-description");
@@ -47,38 +47,42 @@ async function loadProjectDetails(projectId) {
   if (categoryEl) categoryEl.textContent = project.category || "";
   if (descriptionEl) descriptionEl.textContent = project.description || "";
 
-  // عرض كل الصور المرفوعة
+  // عرض الصور
   const mediaContainer = document.getElementById("project-media");
   if (mediaContainer) {
     mediaContainer.innerHTML = "";
 
-    // تجميع كافة روابط الصور المتاحة وتنظيف القيم الفارغة
-    let rawImages = [];
+    // تجميع كل الصور المتاحة
+    let imageList = [];
     if (Array.isArray(project.images) && project.images.length > 0) {
-      rawImages = project.images;
-    } else if (typeof project.images === "string" && project.images.trim() !== "") {
-      rawImages = project.images.split(",").map((s) => s.trim());
-    } else {
-      rawImages = [project.cover_url, project.image_url];
+      imageList = project.images;
+    } else if (project.cover_url) {
+      imageList = [project.cover_url];
+    } else if (project.image_url) {
+      imageList = [project.image_url];
     }
 
-    // تصفية المصفوفة لإزالة أي قيم فارغة أو غير صالحة
-    const validImages = rawImages.filter(
-      (url) => typeof url === "string" && url.trim().length > 0
-    );
+    // تصفية الروابط
+    const cleanImages = imageList.filter(url => typeof url === 'string' && url.trim() !== "");
 
-    if (validImages.length === 0) {
-      mediaContainer.innerHTML = "<p style='color: var(--muted);'>لا توجد صور معروضة لهذا المشروع.</p>";
+    if (cleanImages.length === 0) {
+      mediaContainer.innerHTML = "<p style='color: #888; text-align: center; padding: 20px;'>لا توجد صور مرفوعة لهذا المشروع.</p>";
     } else {
-      validImages.forEach((imgUrl) => {
-        const imgElement = document.createElement("img");
-        imgElement.src = imgUrl;
-        imgElement.alt = project.title || "صورة المشروع";
-        imgElement.loading = "lazy";
-        imgElement.style.cssText =
-          "width: 100%; height: auto; border-radius: var(--radius, 12px); border: 1px solid var(--panel-border, rgba(255,255,255,0.1)); margin-bottom: 24px; display: block; opacity: 1 !important; visibility: visible !important;";
+      cleanImages.forEach((imgUrl) => {
+        const img = document.createElement("img");
+        img.src = imgUrl;
+        img.alt = project.title || "Project Image";
+        // إجبار الصورة على الظهور وتحديد أبعادها لمنع الشاشة السوداء
+        img.style.width = "100%";
+        img.style.height = "auto";
+        img.style.display = "block";
+        img.style.marginBottom = "20px";
+        img.style.borderRadius = "12px";
+        img.style.border = "1px solid rgba(255,255,255,0.1)";
+        img.style.opacity = "1";
+        img.style.visibility = "visible";
 
-        mediaContainer.appendChild(imgElement);
+        mediaContainer.appendChild(img);
       });
     }
   }
