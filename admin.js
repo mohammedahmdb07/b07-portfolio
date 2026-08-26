@@ -68,14 +68,14 @@ async function fetchAdminProjects() {
   projectsList.innerHTML = projects
     .map(
       (project) => `
-    <div class="project-card" style="margin-bottom: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); opacity: ${project.is_hidden ? '0.5' : '1'};">
+    <div class="project-card" style="margin-bottom: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); opacity: ${project.is_published === false ? '0.5' : '1'};">
       <div>
-        <h3 style="font-size: 1.1rem; margin-bottom: 4px;">${project.title} ${project.is_hidden ? '(مخفي)' : ''}</h3>
-        <p style="font-size: 0.85rem; color: var(--muted);">${project.category}</p>
+        <h3 style="font-size: 1.1rem; margin-bottom: 4px;">${project.title || 'بدون عنوان'} ${project.is_published === false ? '(مخفي)' : ''}</h3>
+        <p style="font-size: 0.85rem; color: var(--muted);">${project.category || ''}</p>
       </div>
       <div class="admin-project-actions" style="display: flex; gap: 8px;">
-        <button type="button" class="button button-secondary" onclick="toggleHideProject('${project.id}', ${project.is_hidden})">
-          ${project.is_hidden ? 'إظهار' : 'إخفاء'}
+        <button type="button" class="button button-secondary" onclick="toggleHideProject('${project.id}', ${project.is_published})">
+          ${project.is_published === false ? 'إظهار' : 'إخفاء'}
         </button>
         <button type="button" class="button button-secondary" onclick="editProject('${project.id}')">تعديل</button>
         <button type="button" class="button button-secondary" style="border-color: #ff4d4d; color: #ff4d4d;" onclick="deleteProject('${project.id}')">حذف</button>
@@ -101,16 +101,16 @@ async function handleFormSubmit(e) {
     if (id) {
       const { data: existingProject } = await supabaseClient
         .from("projects")
-        .select("images, image_url")
+        .select("media_urls")
         .eq("id", id)
         .single();
 
-      if (existingProject) {
-        imagesArray = existingProject.images || [existingProject.image_url].filter(Boolean);
+      if (existingProject && existingProject.media_urls) {
+        imagesArray = Array.isArray(existingProject.media_urls) ? existingProject.media_urls : [existingProject.media_urls];
       }
     }
 
-    // رفع أو معالجة الصور الجديدة
+    // رفع الصور الجديدة
     if (projectFilesInput && projectFilesInput.files.length > 0) {
       const uploadedUrls = [];
       for (let i = 0; i < projectFilesInput.files.length; i++) {
@@ -134,7 +134,6 @@ async function handleFormSubmit(e) {
             }
           }
 
-          // بديل Base64 في حالة تعذر الرفع للـ Storage
           const base64Image = await fileToBase64(file);
           uploadedUrls.push(base64Image);
 
@@ -149,15 +148,13 @@ async function handleFormSubmit(e) {
       }
     }
 
-    const firstImage = imagesArray[0] || "";
-
-    // تم حذف cover_url لتفادي خطأ العمود المفقود
+    // المطابقة الدقيقة مع أسماء الأعمدة في قاعدة البيانات عندك
     const projectData = {
       title: titleInput.value,
       category: categoryInput.value,
       description: descriptionInput.value,
-      images: imagesArray,
-      image_url: firstImage
+      media_urls: imagesArray,
+      is_published: true
     };
 
     let error;
@@ -191,7 +188,7 @@ async function handleFormSubmit(e) {
 window.toggleHideProject = async function (id, currentStatus) {
   const { error } = await supabaseClient
     .from("projects")
-    .update({ is_hidden: !currentStatus })
+    .update({ is_published: !currentStatus })
     .eq("id", id);
 
   if (error) {
@@ -212,9 +209,9 @@ window.editProject = async function (id) {
   if (error || !project) return;
 
   projectIdInput.value = project.id;
-  titleInput.value = project.title;
-  categoryInput.value = project.category;
-  descriptionInput.value = project.description;
+  titleInput.value = project.title || "";
+  categoryInput.value = project.category || "";
+  descriptionInput.value = project.description || "";
 
   formTitle.textContent = "تعديل المشروع";
   submitBtn.textContent = "تحديث البيانات";
