@@ -90,13 +90,24 @@ async function handleLogout() {
   await supabaseClient.auth.signOut();
 }
 
-const fileToBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
+// رفع الملفات مباشرة إلى Supabase Storage بدلاً من Base64
+async function uploadFileToStorage(file) {
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+  const filePath = `projects/${fileName}`;
+
+  const { data, error } = await supabaseClient.storage
+    .from('portfolio-media')
+    .upload(filePath, file);
+
+  if (error) throw error;
+
+  const { data: publicUrlData } = supabaseClient.storage
+    .from('portfolio-media')
+    .getPublicUrl(filePath);
+
+  return publicUrlData.publicUrl;
+}
 
 async function fetchAdminProjects() {
   if (!projectsList || !supabaseClient) return;
@@ -158,8 +169,8 @@ async function handleFormSubmit(e) {
     if (projectFilesInput && projectFilesInput.files.length > 0) {
       const newUrls = [];
       for (let i = 0; i < projectFilesInput.files.length; i++) {
-        const base64Str = await fileToBase64(projectFilesInput.files[i]);
-        newUrls.push(base64Str);
+        const publicUrl = await uploadFileToStorage(projectFilesInput.files[i]);
+        newUrls.push(publicUrl);
       }
       mediaArray = id ? [...mediaArray, ...newUrls] : newUrls;
     }
